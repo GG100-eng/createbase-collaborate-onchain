@@ -5,7 +5,7 @@ import { ArrowRight, MessageSquare, Shield, Zap } from 'lucide-react';
 
 const HeroSection = () => {
   return (
-    <section className="py-16 md:py-24 overflow-hidden">
+    <section className="py-12 md:py-16 overflow-hidden">
       <div className="container px-4 md:px-6">
         <div className="grid gap-6 lg:grid-cols-2 lg:gap-12 items-center">
           <div className="flex flex-col gap-4">
@@ -32,30 +32,28 @@ const HeroSection = () => {
           <div className="flex items-center justify-center lg:justify-end">
             <div className="relative w-full max-w-[500px] aspect-square">
               <div className="absolute inset-0 bg-gradient-primary rounded-full blur-[100px] opacity-20"></div>
-              <div className="relative">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="flex flex-col gap-4">
-                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 animate-fade-in [animation-delay:0.2s] opacity-0">
-                      <MessageSquare className="w-8 h-8 text-brand-blue mb-2" />
-                      <h3 className="font-medium text-lg">Authentic Content</h3>
-                      <p className="text-muted-foreground text-sm">Genuine creator conversations that resonate with audiences</p>
-                    </div>
-                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 animate-fade-in [animation-delay:0.6s] opacity-0">
-                      <Zap className="w-8 h-8 text-brand-purple mb-2" />
-                      <h3 className="font-medium text-lg">Automatic Payments</h3>
-                      <p className="text-muted-foreground text-sm">Onchain rewards based on verified engagement</p>
-                    </div>
+              <div className="grid grid-cols-2 gap-4 relative">
+                <div className="flex flex-col gap-4">
+                  <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 animate-fade-in [animation-delay:0.2s] opacity-0">
+                    <MessageSquare className="w-8 h-8 text-brand-blue mb-2" />
+                    <h3 className="font-medium text-lg">Authentic Content</h3>
+                    <p className="text-muted-foreground text-sm">Genuine creator conversations that resonate with audiences</p>
                   </div>
-                  <div className="flex flex-col gap-4 mt-8">
-                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 animate-fade-in [animation-delay:0.4s] opacity-0">
-                      <Shield className="w-8 h-8 text-brand-teal mb-2" />
-                      <h3 className="font-medium text-lg">AI Verification</h3>
-                      <p className="text-muted-foreground text-sm">Smart content verification for brand alignment</p>
-                    </div>
-                    <div className="bg-gradient-primary text-white rounded-xl shadow-lg p-4 animate-fade-in [animation-delay:0.8s] opacity-0">
-                      <h3 className="font-medium text-lg">CreatorBase</h3>
-                      <p className="text-sm opacity-90">Next-gen collaboration platform for brands and creators</p>
-                    </div>
+                  <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 animate-fade-in [animation-delay:0.6s] opacity-0">
+                    <Zap className="w-8 h-8 text-brand-purple mb-2" />
+                    <h3 className="font-medium text-lg">Automatic Payments</h3>
+                    <p className="text-muted-foreground text-sm">Onchain rewards based on verified engagement</p>
+                  </div>
+                </div>
+                <div className="flex flex-col gap-4 mt-8">
+                  <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 animate-fade-in [animation-delay:0.4s] opacity-0">
+                    <Shield className="w-8 h-8 text-brand-teal mb-2" />
+                    <h3 className="font-medium text-lg">AI Verification</h3>
+                    <p className="text-muted-foreground text-sm">Smart content verification for brand alignment</p>
+                  </div>
+                  <div className="bg-gradient-primary text-white rounded-xl shadow-lg p-4 animate-fade-in [animation-delay:0.8s] opacity-0">
+                    <h3 className="font-medium text-lg">CreatorBase</h3>
+                    <p className="text-sm opacity-90">Next-gen collaboration platform for brands and creators</p>
                   </div>
                 </div>
               </div>
@@ -63,8 +61,8 @@ const HeroSection = () => {
           </div>
         </div>
 
-        <div className="mt-16 md:mt-24 text-center">
-          <h2 className="text-xl md:text-2xl font-medium mb-6">A next-gen onchain platform reimagining brand-creator partnerships</h2>
+        <div className="mt-10 md:mt-16 text-center pb-8">
+          <h2 className="text-xl md:text-2xl font-medium mb-4">A next-gen onchain platform reimagining brand-creator partnerships</h2>
           <p className="max-w-3xl mx-auto text-muted-foreground text-lg">
             CreatorBase is where brands drive conversations through social media, while creators get rewarded for producing authentic, brand-aligned content. Brands can easily upload their content requirements, rate per view, and let creators discover and fulfill those requirements. AI ensures submissions are on-brand, engagement is tracked, and payments are automatically processed onchain.
           </p>
