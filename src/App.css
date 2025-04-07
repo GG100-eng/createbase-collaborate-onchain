@@ -44,9 +44,21 @@
 svg {
   transform: translateZ(0); /* Force hardware acceleration */
   backface-visibility: hidden; /* Prevent flickering */
+  will-change: auto; /* Optimize for hardware acceleration */
+  -webkit-transform: translateZ(0); /* Safari/Chrome compatibility */
+  -webkit-backface-visibility: hidden; /* Safari/Chrome compatibility */
+  -webkit-font-smoothing: antialiased; /* Smooth text rendering */
 }
 
 /* Ensure smooth transitions */
 .transition-colors {
   transition-duration: 200ms;
+  transition-timing-function: ease-out;
+  transition-property: background-color, color, border-color;
+}
+
+/* Prevent layout shifts */
+button, a {
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
