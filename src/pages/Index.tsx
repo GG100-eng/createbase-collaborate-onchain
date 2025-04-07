@@ -7,7 +7,6 @@ import Features from '@/components/Features';
 import ForBrands from '@/components/ForBrands';
 import ForCreators from '@/components/ForCreators';
 import CollaborationBenefits from '@/components/CollaborationBenefits';
-import Testimonials from '@/components/Testimonials';
 import CallToAction from '@/components/CallToAction';
 import Footer from '@/components/Footer';
 
@@ -22,7 +21,6 @@ const Index = () => {
         <ForBrands />
         <ForCreators />
         <CollaborationBenefits />
-        <Testimonials />
         <CallToAction />
       </main>
       <Footer />
