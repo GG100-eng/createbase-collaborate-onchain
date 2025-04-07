@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Upload, CheckCircle, DollarSign, Search, Edit, Award } from 'lucide-react';
+import { Upload, CheckCircle, DollarSign, Search, Shield, Award } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 
 const HowItWorks = () => {
@@ -29,9 +29,9 @@ const HowItWorks = () => {
       description: "Creators browse and select campaigns that match their style and interests."
     },
     {
-      icon: <Edit className="h-10 w-10 text-brand-purple" />,
-      title: "Create Content",
-      description: "Submit posts with the specified non-negotiable elements—hashtags, handles, URLs, etc."
+      icon: <Shield className="h-10 w-10 text-brand-purple" />,
+      title: "Proof of Work",
+      description: "Creators earn an Onchain Creator Score based on their engagement metrics, published to a smart contract for transparency and credibility."
     },
     {
       icon: <Award className="h-10 w-10 text-brand-teal" />,
