@@ -44,9 +44,11 @@ const CreatorHeader = () => {
               <User className="h-5 w-5" />
             </Button>
           </div>
-          <Button variant="outline" className="hidden md:flex gap-2">
-            <Home className="h-4 w-4" />
-            Back to Home
+          <Button variant="outline" asChild className="hidden md:flex gap-2">
+            <Link to="/">
+              <Home className="h-4 w-4 mr-2" />
+              Back to Home
+            </Link>
           </Button>
         </div>
       </div>
