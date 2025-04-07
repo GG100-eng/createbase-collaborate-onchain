@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import CampaignFeed from '@/components/creator/CampaignFeed';
+import CampaignFeedUpdated from '@/components/creator/CampaignFeedUpdated';
 import MySubmissions from '@/components/creator/MySubmissions';
 import CreatorStats from '@/components/creator/CreatorStats';
 import CreatorHeader from '@/components/creator/CreatorHeader';
@@ -21,7 +21,7 @@ const CreatorDashboard = () => {
           </TabsList>
           
           <TabsContent value="discover" className="mt-0">
-            <CampaignFeed />
+            <CampaignFeedUpdated />
           </TabsContent>
           
           <TabsContent value="submissions" className="mt-0">
