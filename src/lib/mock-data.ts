@@ -39,6 +39,21 @@ export interface Submission {
 
 export const mockCampaigns: Campaign[] = [
   {
+    id: "c007",
+    title: "Build On Base: India Pilot (Week 1)",
+    brief: "We're rewarding Indian builders, KOLs, and creators who help promote the Base Batches program — a weekly wave of new ideas and projects launching on Base. Share your favorite ideas from this week's batch, explain how people can join or build, and encourage more builders to join the momentum.",
+    brand: "Base Ecosystem",
+    brandLogo: "https://via.placeholder.com/40",
+    minReward: 0,
+    maxReward: 2000,
+    deadline: "2025-04-14",
+    status: 'live',
+    requiredTags: ["#BuildOnBase", "base.org/batches", "@base", "Base Batches"],
+    submissions: 12,
+    budgetRemaining: 2000,
+    payoutModel: 'engagement'
+  },
+  {
     id: "c001",
     title: "Share Your DeFi Success Story",
     brief: "Create a tweet or cast about how using DeFi has positively impacted your financial journey. Include specific platforms or protocols you've used.",

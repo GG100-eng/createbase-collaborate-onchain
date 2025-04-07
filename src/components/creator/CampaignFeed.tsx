@@ -63,9 +63,105 @@ const CampaignFeed = () => {
       return 0;
     }
   });
+
+  // Featured campaign (India Pilot)
+  const featuredCampaign = mockCampaigns.find(c => c.id === "c007");
   
   return (
     <div className="space-y-6">
+      {featuredCampaign && (
+        <div className="mb-8">
+          <div className="flex items-center gap-2 mb-3">
+            <Badge variant="outline" className="bg-orange-100 text-orange-800 border-orange-300">
+              Featured Campaign
+            </Badge>
+            <Badge variant="default" className="bg-green-500">Live</Badge>
+            <Badge variant="outline" className="border-blue-500 text-blue-700">India</Badge>
+          </div>
+          <Card className="border-2 border-orange-200 transition-all hover:shadow-md overflow-hidden">
+            <div className="absolute top-0 right-0 w-40 h-40 -mt-20 -mr-20 bg-orange-100 rounded-full opacity-50" />
+            <CardHeader className="pb-4 relative">
+              <div className="flex justify-between items-start">
+                <div className="flex items-center gap-2">
+                  <div className="w-10 h-10 rounded overflow-hidden bg-muted flex items-center justify-center">
+                    <img 
+                      src={featuredCampaign.brandLogo} 
+                      alt={featuredCampaign.brand} 
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = 'https://via.placeholder.com/40';
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <p className="font-semibold">{featuredCampaign.brand}</p>
+                  </div>
+                </div>
+              </div>
+              
+              <CardTitle className="text-2xl mt-2">{featuredCampaign.title}</CardTitle>
+              <CardDescription className="text-sm mt-2">
+                {featuredCampaign.brief}
+              </CardDescription>
+            </CardHeader>
+            
+            <CardContent className="pb-4 relative">
+              <div className="grid grid-cols-2 gap-y-2 text-sm">
+                <div className="flex items-center gap-1">
+                  <DollarSign className="h-4 w-4 text-muted-foreground" />
+                  <span>Weekly Pool: ${featuredCampaign.maxReward}</span>
+                </div>
+                
+                <div className="flex items-center gap-1">
+                  <Clock className="h-4 w-4 text-muted-foreground" />
+                  <span>Deadline: {new Date(featuredCampaign.deadline).toLocaleDateString()} (11:59 PM IST)</span>
+                </div>
+                
+                <div className="flex items-center gap-1 col-span-2 mt-2">
+                  <Tag className="h-4 w-4 text-muted-foreground" />
+                  <span className="font-medium">Required elements (all 4 must be included):</span>
+                </div>
+                
+                <div className="col-span-2 ml-6">
+                  <div className="flex flex-wrap gap-2 mt-1">
+                    {featuredCampaign.requiredTags.map((tag, i) => (
+                      <span key={i} className="inline-flex items-center text-sm bg-green-100 text-green-800 rounded px-2 py-1">
+                        <svg className="w-3 h-3 mr-1 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              
+              <Separator className="my-4" />
+              
+              <div className="text-sm">
+                <p className="font-medium mb-2">Who can participate:</p>
+                <ul className="list-disc pl-5 space-y-1">
+                  <li>Based in India or contributing to Indian onchain culture</li>
+                  <li>Creators, community leaders, devs, KOLs</li>
+                </ul>
+                
+                <p className="font-medium mt-3 mb-2">Payout criteria:</p>
+                <ul className="list-disc pl-5 space-y-1">
+                  <li>Engagement (views, likes, replies, reposts)</li>
+                  <li>Quality (relevance, clarity, creativity)</li>
+                  <li>Consistency (if part of ongoing efforts)</li>
+                </ul>
+              </div>
+            </CardContent>
+            
+            <CardFooter className="pt-2">
+              <Button className="w-full">Apply for Campaign</Button>
+            </CardFooter>
+          </Card>
+        </div>
+      )}
+      
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="relative flex-1 max-w-xl">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -105,7 +201,7 @@ const CampaignFeed = () => {
       </div>
       
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {sortedCampaigns.map((campaign) => (
+        {sortedCampaigns.filter(campaign => campaign.id !== "c007").map((campaign) => (
           <Card key={campaign.id} className="transition-all hover:shadow-md">
             <CardHeader className="pb-4">
               <div className="flex justify-between items-start">
