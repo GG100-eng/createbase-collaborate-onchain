@@ -43,7 +43,7 @@ export const mockCampaigns: Campaign[] = [
     title: "Build On Base: India Pilot (Week 1)",
     brief: "We're rewarding Indian builders, KOLs, and creators who help promote the Base Batches program — a weekly wave of new ideas and projects launching on Base. Share your favorite ideas from this week's batch, explain how people can join or build, and encourage more builders to join the momentum.",
     brand: "Base Ecosystem",
-    brandLogo: "https://via.placeholder.com/40",
+    brandLogo: "https://cryptologos.cc/logos/base-logo.png", // Using Base logo
     minReward: 0,
     maxReward: 2000,
     deadline: "2025-04-14",
