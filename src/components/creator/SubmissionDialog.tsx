@@ -34,13 +34,7 @@ const SubmissionDialog = ({ campaign, open, onOpenChange }: SubmissionDialogProp
         <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 w-24 h-24 rounded-xl overflow-hidden shadow-lg border-4 border-background">
           <AspectRatio ratio={1/1}>
             <div className="w-full h-full bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center">
-              {campaign.logo ? (
-                <img 
-                  src={campaign.logo} 
-                  alt={`${campaign.brand} logo`} 
-                  className="w-16 h-16 object-contain"
-                />
-              ) : (
+              {campaign.brand && (
                 <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center text-xl font-bold text-primary">
                   {campaign.brand.charAt(0)}
                 </div>
@@ -62,13 +56,13 @@ const SubmissionDialog = ({ campaign, open, onOpenChange }: SubmissionDialogProp
             <p className="text-sm">{campaign.brief}</p>
           </div>
           
-          {campaign.requirements && (
+          {campaign.brief && campaign.brief.includes("requirements") && (
             <div className="mb-4">
               <h3 className="font-medium text-sm text-muted-foreground mb-1">Requirements:</h3>
               <ul className="list-disc list-inside text-sm space-y-1">
-                {campaign.requirements.map((req, index) => (
-                  <li key={index}>{req}</li>
-                ))}
+                <li>Create authentic content featuring the product</li>
+                <li>Include campaign hashtags in your post</li>
+                <li>Tag the brand account in your content</li>
               </ul>
             </div>
           )}
