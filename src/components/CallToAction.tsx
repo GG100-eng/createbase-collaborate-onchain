@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
 
 const CallToAction = () => {
   return (
@@ -17,8 +18,8 @@ const CallToAction = () => {
               Join CreatorBase today and transform how brands and creators collaborate in the digital space.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
-              <Button size="lg" className="bg-white text-brand-blue hover:bg-white/90">
-                Start Now with CreatorBase
+              <Button size="lg" className="bg-white text-brand-blue hover:bg-white/90" asChild>
+                <Link to="/creator-dashboard">Start Now with CreatorBase</Link>
               </Button>
               <Button variant="outline" size="lg" className="border-white text-white hover:bg-white/10">
                 Request a Demo
