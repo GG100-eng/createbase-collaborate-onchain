@@ -64,10 +64,12 @@ export default {
 					ring: 'hsl(var(--sidebar-ring))'
 				},
 				brand: {
-					blue: "#4F46E5",
+					blue: "#3B82F6",
 					purple: "#8B5CF6",
-					teal: "#06B6D4",
-					dark: "#1E293B"
+					teal: "#14B8A6",
+					dark: "#0F172A",
+					amber: "#F59E0B",
+					rose: "#F43F5E"
 				}
 			},
 			borderRadius: {
@@ -136,6 +138,22 @@ export default {
 						'background-position': '500px 0',
 					},
 				},
+				'float': {
+					'0%, 100%': {
+						transform: 'translateY(0)',
+					},
+					'50%': {
+						transform: 'translateY(-10px)',
+					},
+				},
+				'spin-slow': {
+					'0%': {
+						transform: 'rotate(0deg)',
+					},
+					'100%': {
+						transform: 'rotate(360deg)',
+					},
+				},
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
@@ -145,11 +163,16 @@ export default {
 				'pulse-slow': 'pulse-slow 3s infinite',
 				'gradient-x': 'gradient-x 3s ease infinite',
 				'shimmer': 'shimmer 2s infinite linear',
+				'float': 'float 6s ease-in-out infinite',
+				'spin-slow': 'spin-slow 12s linear infinite',
 			},
 			backgroundImage: {
 				'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
-				'gradient-primary': 'linear-gradient(90deg, #4F46E5 0%, #8B5CF6 100%)',
+				'gradient-primary': 'linear-gradient(90deg, #3B82F6 0%, #8B5CF6 100%)',
+				'gradient-cool': 'linear-gradient(135deg, #3B82F6 0%, #14B8A6 100%)',
+				'gradient-warm': 'linear-gradient(135deg, #F59E0B 0%, #F43F5E 100%)',
 				'gradient-shimmer': 'linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.2) 20%, rgba(255, 255, 255, 0.5) 60%, rgba(255, 255, 255, 0))',
+				'noise': "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E\")",
 			},
 		}
 	},
