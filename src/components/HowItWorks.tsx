@@ -2,7 +2,6 @@
 import React from 'react';
 import { Upload, CheckCircle, DollarSign, Search, Shield, Award } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-import { motion } from 'framer-motion';
 
 const HowItWorks = () => {
   const brandsSteps = [
@@ -41,97 +40,68 @@ const HowItWorks = () => {
     }
   ];
 
-  const container = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.2
-      }
-    }
-  };
-
-  const item = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0, transition: { duration: 0.5 } }
-  };
-
   return (
-    <section id="how-it-works" className="py-16 md:py-24 bg-gradient-to-br from-white via-muted/30 to-white dark:from-gray-900 dark:via-gray-800/50 dark:to-gray-900">
+    <section id="how-it-works" className="py-16 md:py-24 bg-muted/50">
       <div className="container px-4 md:px-6">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl mb-3">
-            <span className="relative pb-2 section-title">How CreatorBase Works</span>
+        <div className="text-center mb-12">
+          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">
+            How CreatorBase Works
           </h2>
-          <p className="mt-4 text-xl text-muted-foreground max-w-2xl mx-auto">
+          <p className="mt-4 text-xl text-muted-foreground">
             A streamlined process for both brands and creators
           </p>
         </div>
 
         <div className="grid md:grid-cols-2 gap-12 mt-12">
           {/* For Brands */}
-          <motion.div 
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true, amount: 0.3 }}
-            variants={container}
-          >
+          <div>
             <div className="flex items-center gap-2 mb-6">
-              <div className="w-1 h-8 bg-gradient-to-b from-brand-blue to-brand-purple rounded-full"></div>
+              <div className="w-1 h-8 bg-brand-blue rounded-full"></div>
               <h3 className="text-2xl font-bold">For Brands</h3>
             </div>
-            <motion.div className="space-y-6" variants={container}>
+            <div className="space-y-6">
               {brandsSteps.map((step, index) => (
-                <motion.div key={`brand-${index}`} variants={item}>
-                  <Card className="border-none card-gradient overflow-hidden animated-border-gradient">
-                    <CardContent className="p-6">
-                      <div className="flex gap-4 items-start">
-                        <div className="icon-container">
-                          {step.icon}
-                        </div>
-                        <div>
-                          <h4 className="text-xl font-semibold mb-2">{step.title}</h4>
-                          <p className="text-muted-foreground">{step.description}</p>
-                        </div>
+                <Card key={`brand-${index}`} className="border-none shadow-md card-hover">
+                  <CardContent className="p-6">
+                    <div className="flex gap-4 items-start">
+                      <div className="bg-white dark:bg-gray-800 p-3 rounded-full shadow-sm">
+                        {step.icon}
                       </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
+                      <div>
+                        <h4 className="text-xl font-semibold mb-2">{step.title}</h4>
+                        <p className="text-muted-foreground">{step.description}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               ))}
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
 
           {/* For Creators */}
-          <motion.div 
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true, amount: 0.3 }}
-            variants={container}
-          >
+          <div>
             <div className="flex items-center gap-2 mb-6">
-              <div className="w-1 h-8 bg-gradient-to-b from-brand-purple to-brand-teal rounded-full"></div>
+              <div className="w-1 h-8 bg-brand-purple rounded-full"></div>
               <h3 className="text-2xl font-bold">For Creators</h3>
             </div>
-            <motion.div className="space-y-6" variants={container}>
+            <div className="space-y-6">
               {creatorsSteps.map((step, index) => (
-                <motion.div key={`creator-${index}`} variants={item}>
-                  <Card className="border-none card-gradient overflow-hidden animated-border-gradient">
-                    <CardContent className="p-6">
-                      <div className="flex gap-4 items-start">
-                        <div className="icon-container">
-                          {step.icon}
-                        </div>
-                        <div>
-                          <h4 className="text-xl font-semibold mb-2">{step.title}</h4>
-                          <p className="text-muted-foreground">{step.description}</p>
-                        </div>
+                <Card key={`creator-${index}`} className="border-none shadow-md card-hover">
+                  <CardContent className="p-6">
+                    <div className="flex gap-4 items-start">
+                      <div className="bg-white dark:bg-gray-800 p-3 rounded-full shadow-sm">
+                        {step.icon}
                       </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
+                      <div>
+                        <h4 className="text-xl font-semibold mb-2">{step.title}</h4>
+                        <p className="text-muted-foreground">{step.description}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               ))}
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
         </div>
       </div>
     </section>
