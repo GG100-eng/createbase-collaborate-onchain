@@ -64,9 +64,9 @@ export default {
 					ring: 'hsl(var(--sidebar-ring))'
 				},
 				brand: {
-					blue: "#3B82F6",
+					blue: "#4F46E5",
 					purple: "#8B5CF6",
-					teal: "#0EA5E9",
+					teal: "#06B6D4",
 					dark: "#1E293B"
 				}
 			},
@@ -119,18 +119,37 @@ export default {
 					'50%': {
 						opacity: '0.8',
 					},
-				}
+				},
+				'gradient-x': {
+					'0%, 100%': {
+						'background-position': '0% 50%',
+					},
+					'50%': {
+						'background-position': '100% 50%',
+					},
+				},
+				'shimmer': {
+					'0%': {
+						'background-position': '-500px 0',
+					},
+					'100%': {
+						'background-position': '500px 0',
+					},
+				},
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out',
 				'fade-in': 'fade-in 0.5s ease-out forwards',
 				'slide-in': 'slide-in 0.5s ease-out forwards',
-				'pulse-slow': 'pulse-slow 3s infinite'
+				'pulse-slow': 'pulse-slow 3s infinite',
+				'gradient-x': 'gradient-x 3s ease infinite',
+				'shimmer': 'shimmer 2s infinite linear',
 			},
 			backgroundImage: {
 				'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
-				'gradient-primary': 'linear-gradient(90deg, #3B82F6 0%, #8B5CF6 100%)',
+				'gradient-primary': 'linear-gradient(90deg, #4F46E5 0%, #8B5CF6 100%)',
+				'gradient-shimmer': 'linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.2) 20%, rgba(255, 255, 255, 0.5) 60%, rgba(255, 255, 255, 0))',
 			},
 		}
 	},

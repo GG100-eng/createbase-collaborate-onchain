@@ -5,7 +5,7 @@
 
 @layer base {
   :root {
-    --background: 210 40% 98%;
+    --background: 220 33% 98%;
     --foreground: 222.2 84% 4.9%;
 
     --card: 0 0% 100%;
@@ -101,5 +101,50 @@
 @layer components {
   .card-hover {
     @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
+  }
+  
+  .section-title {
+    @apply relative inline-block after:content-[''] after:absolute after:w-1/3 after:h-1 after:bg-gradient-primary after:bottom-0 after:left-0 after:rounded-full;
+  }
+  
+  .card-gradient {
+    @apply bg-gradient-to-br from-white to-muted/80 dark:from-gray-900 dark:to-gray-800 shadow-md;
+  }
+  
+  .icon-container {
+    @apply relative p-3 rounded-lg bg-white shadow-sm overflow-hidden z-10 
+           before:absolute before:inset-0 before:bg-gradient-primary before:opacity-0 before:transition-opacity before:duration-300 
+           hover:before:opacity-10 transition-all duration-300 hover:shadow-md;
+  }
+  
+  .animated-bg {
+    @apply relative overflow-hidden before:absolute before:inset-0 before:bg-gradient-radial before:from-brand-blue/5 before:to-transparent 
+           after:absolute after:inset-0 after:bg-gradient-radial after:from-brand-purple/5 after:to-transparent after:translate-x-full 
+           hover:after:translate-x-0 after:transition-transform after:duration-1000;
+  }
+}
+
+@layer utilities {
+  .animated-border-gradient {
+    @apply relative before:absolute before:inset-0 before:p-[2px] before:rounded-lg before:bg-gradient-to-r 
+           before:from-brand-blue before:via-brand-purple before:to-brand-teal before:animate-gradient-x 
+           before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-500;
+  }
+  
+  @keyframes gradient-x {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+  
+  .animate-gradient-x {
+    animation: gradient-x 3s ease infinite;
+    background-size: 200% 200%;
   }
 }
