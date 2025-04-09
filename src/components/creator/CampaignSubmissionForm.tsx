@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -70,8 +71,11 @@ const CampaignSubmissionForm = ({
       setIsValidating(true);
       
       try {
+        console.log('Submission started for URL:', data.contentUrl);
+        
         // First check if the URL format is valid
         const urlCheck = await twitterCheckerService.checkTweetUrl(data.contentUrl);
+        console.log('URL check complete:', urlCheck);
         
         if (!urlCheck.valid) {
           toast({
@@ -90,16 +94,31 @@ const CampaignSubmissionForm = ({
           topics: campaign.requiredTopics || []
         };
         
+        console.log('Validating with these requirements:', requirements);
+        
         // Validate tweet against requirements
         const validation = await twitterCheckerService.validateTweet(
           data.contentUrl, 
           requirements
         );
         
+        console.log('Validation complete. Result:', validation);
         setValidationResult(validation);
         
+        // Force the validation result to be displayed even if there's an issue with the response format
+        if (!validation || typeof validation !== 'object') {
+          console.error('Invalid validation response format:', validation);
+          toast({
+            title: "Validation Error",
+            description: "Received invalid response format from validation service.",
+            variant: "destructive",
+          });
+          setIsValidating(false);
+          return;
+        }
+        
         // If validation failed, stop and show errors
-        if (!validation.success || !validation.passed) {
+        if (!validation.success || validation.passed === false) {
           const errorMessage = validation.errors?.join(", ") || 
             "Your tweet doesn't meet all campaign requirements.";
             
@@ -120,6 +139,7 @@ const CampaignSubmissionForm = ({
         });
         
         // Continue with submission process
+        console.log('Validation passed, continuing with submission');
       } catch (error) {
         console.error("Error during tweet validation:", error);
         toast({
@@ -289,23 +309,31 @@ const CampaignSubmissionForm = ({
             
             {validationResult.requirements && (
               <div className="space-y-2 text-sm">
-                {Object.entries(validationResult.requirements).map(([key, value]) => (
-                  <div key={key} className="flex items-start gap-2">
-                    {value.passed ? (
-                      <Check className="h-4 w-4 text-green-600 mt-0.5" />
-                    ) : (
-                      <X className="h-4 w-4 text-red-600 mt-0.5" />
-                    )}
-                    <div>
-                      <span className="font-medium">{key.charAt(0).toUpperCase() + key.slice(1)}</span>
-                      {!value.passed && value.missing?.length > 0 && (
-                        <span className="block text-xs text-red-600">
-                          Missing: {value.missing.join(', ')}
-                        </span>
+                {Object.entries(validationResult.requirements).map(([key, value]) => {
+                  // Skip if value is not an object or doesn't have passed property
+                  if (!value || typeof value !== 'object' || typeof value.passed === 'undefined') {
+                    console.log('Skipping invalid requirement:', key, value);
+                    return null;
+                  }
+                  
+                  return (
+                    <div key={key} className="flex items-start gap-2">
+                      {value.passed ? (
+                        <Check className="h-4 w-4 text-green-600 mt-0.5" />
+                      ) : (
+                        <X className="h-4 w-4 text-red-600 mt-0.5" />
                       )}
+                      <div>
+                        <span className="font-medium">{key.charAt(0).toUpperCase() + key.slice(1)}</span>
+                        {!value.passed && value.missing?.length > 0 && (
+                          <span className="block text-xs text-red-600">
+                            Missing: {value.missing.join(', ')}
+                          </span>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
             
