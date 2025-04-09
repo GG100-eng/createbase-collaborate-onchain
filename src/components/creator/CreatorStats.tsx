@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { 
   BarChart3, 
@@ -28,20 +27,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { mockSubmissions } from '@/lib/mock-data';
-
-// Chart from recharts
-import {
-  AreaChart,
-  Area,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Legend,
-} from 'recharts';
+import { calculateEngagementScore, calculateAverageEngagementScore } from '@/utils/engagementCalculator';
 
 const performanceData = [
   { date: '04/01', engagementScore: 45, payout: 80 },
@@ -75,6 +61,81 @@ const CreatorStats = () => {
   // Calculate total payouts
   const totalPayouts = mockSubmissions.reduce((sum, sub) => sum + sub.estimatedPayout, 0);
   
+  // Calculate average engagement score from all submissions
+  const averageEngagementScore = calculateAverageEngagementScore(mockSubmissions);
+  
+  // Create engagement data for chart based on actual metrics
+  const calculatedEngagementBreakdown = [
+    { 
+      name: 'Views', 
+      value: mockSubmissions.reduce((sum, sub) => sum + sub.metrics.views, 0) 
+    },
+    { 
+      name: 'Likes', 
+      value: mockSubmissions.reduce((sum, sub) => sum + sub.metrics.likes, 0) 
+    },
+    { 
+      name: 'Comments', 
+      value: mockSubmissions.reduce((sum, sub) => sum + sub.metrics.comments, 0) 
+    },
+    { 
+      name: 'Reposts', 
+      value: mockSubmissions.reduce((sum, sub) => sum + sub.metrics.reposts, 0) 
+    },
+  ];
+  
+  // Calculate performance data based on submissions grouped by date
+  const submissionsByDate = mockSubmissions.reduce((acc, submission) => {
+    // Format date to MM/DD
+    const date = new Date(submission.submittedAt).toLocaleDateString('en-US', {
+      month: '2-digit',
+      day: '2-digit'
+    });
+    
+    if (!acc[date]) {
+      acc[date] = {
+        submissions: [],
+        engagementScore: 0,
+        payout: 0
+      };
+    }
+    
+    acc[date].submissions.push(submission);
+    acc[date].payout += submission.estimatedPayout;
+    
+    return acc;
+  }, {});
+  
+  // Transform grouped data into chart format
+  const calculatedPerformanceData = Object.entries(submissionsByDate).map(([date, data]) => {
+    const avgScore = data.submissions.length > 0 
+      ? calculateAverageEngagementScore(data.submissions)
+      : 0;
+      
+    return {
+      date,
+      engagementScore: avgScore,
+      payout: data.payout
+    };
+  }).sort((a, b) => {
+    // Sort by date (MM/DD format)
+    const [aMonth, aDay] = a.date.split('/').map(Number);
+    const [bMonth, bDay] = b.date.split('/').map(Number);
+    
+    if (aMonth !== bMonth) return aMonth - bMonth;
+    return aDay - bDay;
+  });
+  
+  // Use calculated performance data if available, otherwise use mock data
+  const chartPerformanceData = calculatedPerformanceData.length > 0 
+    ? calculatedPerformanceData 
+    : performanceData;
+  
+  // Use calculated engagement breakdown if available, otherwise use mock data
+  const chartEngagementBreakdown = calculatedEngagementBreakdown.some(item => item.value > 0)
+    ? calculatedEngagementBreakdown
+    : engagementBreakdown;
+  
   return (
     <div className="space-y-8">
       <h2 className="text-2xl font-bold">Performance & Payouts</h2>
@@ -106,12 +167,12 @@ const CreatorStats = () => {
         <Card>
           <CardHeader className="pb-2">
             <CardDescription>Avg. Engagement Score</CardDescription>
-            <CardTitle className="text-3xl">68/100</CardTitle>
+            <CardTitle className="text-3xl">{averageEngagementScore}/100</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-xs text-muted-foreground flex items-center gap-1">
               <TrendingUp className="h-3 w-3 text-green-500" />
-              Up 12% from last month
+              Based on weighted metrics
             </p>
           </CardContent>
         </Card>
@@ -154,7 +215,7 @@ const CreatorStats = () => {
           <CardContent>
             <div className="h-[300px] w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={performanceData}>
+                <AreaChart data={chartPerformanceData}>
                   <defs>
                     <linearGradient id="colorScore" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.8}/>
@@ -205,7 +266,7 @@ const CreatorStats = () => {
           <CardContent>
             <div className="h-[250px] w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={engagementBreakdown}>
+                <BarChart data={chartEngagementBreakdown}>
                   <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
                   <XAxis dataKey="name" />
                   <YAxis />
