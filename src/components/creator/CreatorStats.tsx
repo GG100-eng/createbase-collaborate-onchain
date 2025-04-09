@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { 
   BarChart3, 
@@ -27,8 +26,9 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { mockSubmissions } from '@/lib/mock-data';
 import { calculateAverageEngagementScore } from '@/utils/engagementCalculator';
+import { fetchSubmissions } from '@/services/submissionService';
+import { useQuery } from '@tanstack/react-query';
 import { 
   ResponsiveContainer, 
   AreaChart, 
@@ -59,46 +59,59 @@ const engagementBreakdown = [
 ];
 
 const CreatorStats = () => {
+  // Fetch submissions from the API
+  const { data: submissionsData, isLoading, error } = useQuery({
+    queryKey: ['submissions'],
+    queryFn: fetchSubmissions,
+  });
+  
+  // If loading or error, handle appropriately
+  if (isLoading) return <div className="py-10 text-center">Loading stats...</div>;
+  if (error) return <div className="py-10 text-center text-red-500">Error loading stats: {error.message}</div>;
+  if (!submissionsData || submissionsData.length === 0) {
+    return <div className="py-10 text-center">No submission data available to display stats</div>;
+  }
+  
   // Calculate total submissions
-  const totalSubmissions = mockSubmissions.length;
+  const totalSubmissions = submissionsData.length;
   
   // Calculate verified submissions
-  const verifiedSubmissions = mockSubmissions.filter(sub => sub.status === 'verified').length;
+  const verifiedSubmissions = submissionsData.filter(sub => sub.status === 'verified').length;
   
   // Calculate pending submissions
-  const pendingSubmissions = mockSubmissions.filter(sub => sub.status === 'pending').length;
+  const pendingSubmissions = submissionsData.filter(sub => sub.status === 'pending').length;
   
   // Calculate rejected submissions
-  const rejectedSubmissions = mockSubmissions.filter(sub => sub.status === 'rejected').length;
+  const rejectedSubmissions = submissionsData.filter(sub => sub.status === 'rejected').length;
   
   // Calculate total payouts
-  const totalPayouts = mockSubmissions.reduce((sum, sub) => sum + sub.estimatedPayout, 0);
+  const totalPayouts = submissionsData.reduce((sum, sub) => sum + sub.estimatedPayout, 0);
   
   // Get average engagement score from all submissions
-  const averageEngagementScore = calculateAverageEngagementScore(mockSubmissions);
+  const averageEngagementScore = calculateAverageEngagementScore(submissionsData);
   
   // Create engagement data for chart based on actual metrics
   const calculatedEngagementBreakdown = [
     { 
       name: 'Views', 
-      value: mockSubmissions.reduce((sum, sub) => sum + sub.metrics.views, 0) 
+      value: submissionsData.reduce((sum, sub) => sum + sub.metrics.views, 0) 
     },
     { 
       name: 'Likes', 
-      value: mockSubmissions.reduce((sum, sub) => sum + sub.metrics.likes, 0) 
+      value: submissionsData.reduce((sum, sub) => sum + sub.metrics.likes, 0) 
     },
     { 
       name: 'Comments', 
-      value: mockSubmissions.reduce((sum, sub) => sum + sub.metrics.comments, 0) 
+      value: submissionsData.reduce((sum, sub) => sum + sub.metrics.comments, 0) 
     },
     { 
       name: 'Reposts', 
-      value: mockSubmissions.reduce((sum, sub) => sum + sub.metrics.reposts, 0) 
+      value: submissionsData.reduce((sum, sub) => sum + sub.metrics.reposts, 0) 
     },
   ];
   
   // Calculate performance data based on submissions grouped by date
-  const submissionsByDate = mockSubmissions.reduce((acc, submission) => {
+  const submissionsByDate = submissionsData.reduce((acc, submission) => {
     // Format date to MM/DD
     const date = new Date(submission.submittedAt).toLocaleDateString('en-US', {
       month: '2-digit',
@@ -118,7 +131,7 @@ const CreatorStats = () => {
     acc[date].payout += submission.estimatedPayout;
     
     return acc;
-  }, {} as Record<string, { submissions: typeof mockSubmissions, totalScore: number, payout: number }>);
+  }, {} as Record<string, { submissions: typeof submissionsData, totalScore: number, payout: number }>);
   
   // Transform grouped data into chart format
   const calculatedPerformanceData = Object.entries(submissionsByDate).map(([date, data]) => {

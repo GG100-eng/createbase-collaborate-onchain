@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Eye, 
   ThumbsUp, 
@@ -33,15 +32,24 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { mockSubmissions } from '@/lib/mock-data'; // TODO: Replace with API call when ready
+import { Submission } from '@/lib/mock-data';
 import { getEngagementFeedback } from '@/utils/engagementCalculator';
+import { fetchSubmissions } from '@/services/submissionService';
+import { useQuery } from '@tanstack/react-query';
 
 const MySubmissions = () => {
   const [searchQuery, setSearchQuery] = useState('');
   
-  // TODO: Replace this with a real API call when backend is ready
-  // This is currently using mock data for demonstration purposes
-  const submissionsData = mockSubmissions;
+  // Fetch submissions from the API
+  const { data: submissionsData, isLoading, error } = useQuery({
+    queryKey: ['submissions'],
+    queryFn: fetchSubmissions,
+  });
+  
+  // If loading or error, handle appropriately
+  if (isLoading) return <div className="py-10 text-center">Loading submissions...</div>;
+  if (error) return <div className="py-10 text-center text-red-500">Error loading submissions: {error.message}</div>;
+  if (!submissionsData) return <div className="py-10 text-center">No submissions found</div>;
   
   // Filter submissions based on search query
   const filteredSubmissions = submissionsData.filter(submission => 
@@ -59,7 +67,7 @@ const MySubmissions = () => {
     ? filteredSubmissions.filter(submission => submission.campaignId !== "c007")
     : filteredSubmissions;
 
-  const renderSubmissionCard = (submission) => (
+  const renderSubmissionCard = (submission: Submission) => (
     <Card key={submission.id} className="overflow-hidden">
       <CardHeader className="pb-4">
         <div className="flex justify-between items-start flex-wrap gap-2">
