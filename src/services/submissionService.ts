@@ -8,7 +8,10 @@ import { toast } from "@/hooks/use-toast";
  */
 export const fetchSubmissions = async (): Promise<Submission[]> => {
   try {
-    const response = await fetch('/api/submissions');
+    // Force non-cached response with a random query parameter
+    const timestamp = new Date().getTime();
+    const response = await fetch(`/api/submissions?t=${timestamp}`);
+    
     if (!response.ok) {
       throw new Error(`API error: ${response.status}`);
     }
@@ -32,7 +35,10 @@ export const fetchSubmissions = async (): Promise<Submission[]> => {
 
 export const fetchSubmissionById = async (id: string): Promise<Submission | undefined> => {
   try {
-    const response = await fetch(`/api/submissions/${id}`);
+    // Force non-cached response with a random query parameter
+    const timestamp = new Date().getTime();
+    const response = await fetch(`/api/submissions/${id}?t=${timestamp}`);
+    
     if (!response.ok) {
       throw new Error(`API error: ${response.status}`);
     }

@@ -1,4 +1,3 @@
-
 export interface Campaign {
   id: string;
   title: string;
@@ -171,7 +170,7 @@ export const mockSubmissions: Submission[] = [
     brand: "DeFi Alliance",
     contentUrl: "https://twitter.com/user/status/123456789",
     contentPlatform: "twitter",
-    submittedAt: "2025-04-10T14:30:00Z",
+    submittedAt: "2025-04-08T14:30:00Z",
     status: "verified",
     feedback: "Great story with compelling personal experience. Consider adding more specific numbers next time.",
     metrics: {
@@ -186,13 +185,13 @@ export const mockSubmissions: Submission[] = [
     payoutTxHash: null
   },
   {
-    id: "s004",  // Adding a new submission for the featured campaign
+    id: "s004",
     campaignId: "c007",
     campaignTitle: "Build On Base: India Pilot (Week 1)",
     brand: "Base Ecosystem",
     contentUrl: "https://twitter.com/user/status/987654321",
     contentPlatform: "twitter",
-    submittedAt: "2025-04-08T10:15:00Z",
+    submittedAt: "2025-04-09T15:45:00Z",
     status: "pending",
     feedback: "",
     metrics: {
