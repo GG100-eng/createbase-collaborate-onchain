@@ -1,6 +1,5 @@
 
 import { Submission, mockSubmissions } from '@/lib/mock-data';
-import { toast } from "@/hooks/use-toast";
 
 /**
  * Service to fetch submission data

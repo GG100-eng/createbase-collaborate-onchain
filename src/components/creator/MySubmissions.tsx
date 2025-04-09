@@ -48,7 +48,7 @@ const MySubmissions = () => {
     refetchOnWindowFocus: true,
     refetchOnMount: true,
     staleTime: 0, // Always consider data stale for immediate refetching
-    cacheTime: 0, // Don't cache results
+    gcTime: 0, // Don't cache results (updated from cacheTime to gcTime)
   });
   
   // Force a refetch when component mounts
