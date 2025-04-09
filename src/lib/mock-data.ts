@@ -186,6 +186,27 @@ export const mockSubmissions: Submission[] = [
     payoutTxHash: null
   },
   {
+    id: "s004",  // Adding a new submission for the featured campaign
+    campaignId: "c007",
+    campaignTitle: "Build On Base: India Pilot (Week 1)",
+    brand: "Base Ecosystem",
+    contentUrl: "https://twitter.com/user/status/987654321",
+    contentPlatform: "twitter",
+    submittedAt: "2025-04-08T10:15:00Z",
+    status: "pending",
+    feedback: "",
+    metrics: {
+      views: 1850,
+      likes: 112,
+      comments: 28,
+      reposts: 42,
+      engagementScore: 73
+    },
+    leaderboardPosition: null,
+    estimatedPayout: 450,
+    payoutTxHash: null
+  },
+  {
     id: "s002",
     campaignId: "c002",
     campaignTitle: "Onchain Gaming Highlights",

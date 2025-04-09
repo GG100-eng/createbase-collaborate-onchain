@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -26,6 +27,7 @@ import {
 import { Campaign } from '@/lib/mock-data';
 import { useToast } from '@/hooks/use-toast';
 import { twitterCheckerService, TweetValidationResult } from '@/services/twitterCheckerService';
+import { useNavigate } from 'react-router-dom';
 
 const formSchema = z.object({
   contentUrl: z.string().url({
@@ -49,6 +51,7 @@ const CampaignSubmissionForm = ({
   onCancel,
 }: CampaignSubmissionFormProps) => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [isValidating, setIsValidating] = useState(false);
   const [validationResult, setValidationResult] = useState<TweetValidationResult | null>(null);
   
@@ -137,6 +140,8 @@ const CampaignSubmissionForm = ({
             });
             setIsValidating(false);
             onSuccess();
+            // Navigate to My Submissions tab after successful submission
+            navigate('/creator-dashboard', { state: { defaultTab: 'submissions' } });
           }, 1000);
         } else {
           // Get a meaningful error message
@@ -173,6 +178,8 @@ const CampaignSubmissionForm = ({
         });
         setIsValidating(false);
         onSuccess();
+        // Navigate to My Submissions tab after successful submission
+        navigate('/creator-dashboard', { state: { defaultTab: 'submissions' } });
       }, 1000);
     }
   };
