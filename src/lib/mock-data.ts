@@ -51,9 +51,10 @@ export const mockCampaigns: Campaign[] = [
     maxReward: 2000,
     deadline: "2025-04-14",
     status: 'live',
-    requiredTags: ["#BuildOnBase", "base.org/batches", "@base", "Base Batches"],
+    requiredTags: ["#BuildOnBase"],
     requiredMentions: ["@base"],
     requiredTopics: ["Base Batches", "Layer 2 blockchain"],
+    requiredUrls: ["www.base.org/batches"],
     submissions: 12,
     budgetRemaining: 2000,
     payoutModel: 'engagement'
