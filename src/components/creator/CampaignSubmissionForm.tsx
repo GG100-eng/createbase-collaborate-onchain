@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -137,6 +136,19 @@ const CampaignSubmissionForm = ({
             title: "Tweet Validation Successful",
             description: "Your content has been validated and meets all requirements!",
           });
+          
+          // Continue with submission process
+          console.log('Validation passed, continuing with submission');
+          
+          // In a real app, you would send this data to your backend
+          setTimeout(() => {
+            toast({
+              title: 'Submission successful!',
+              description: 'Your content has been submitted for review.',
+            });
+            setIsValidating(false);
+            onSuccess();
+          }, 1000);
         } else {
           // Get a meaningful error message
           const errorMessage = validation.errors?.join(", ") || 
@@ -149,21 +161,7 @@ const CampaignSubmissionForm = ({
           });
           
           setIsValidating(false);
-          return;
         }
-        
-        // Continue with submission process if validation passed
-        console.log('Validation passed, continuing with submission');
-        
-        // In a real app, you would send this data to your backend
-        setTimeout(() => {
-          toast({
-            title: 'Submission successful!',
-            description: 'Your content has been submitted for review.',
-          });
-          setIsValidating(false);
-          onSuccess();
-        }, 1000);
         
       } catch (error) {
         console.error("Error during tweet validation:", error);

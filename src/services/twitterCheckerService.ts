@@ -80,8 +80,22 @@ export const twitterCheckerService = {
     try {
       console.log('Validating tweet with requirements:', { url, requirements });
       
+      // Pre-process hashtags to ensure proper format
+      const processedRequirements = {
+        hashtags: requirements.hashtags.filter(tag => tag.startsWith('#')),
+        mentions: requirements.mentions,
+        topics: [...requirements.topics]
+      };
+      
+      // Move non-hashtag items from hashtags array to topics
+      requirements.hashtags.forEach(item => {
+        if (!item.startsWith('#') && !processedRequirements.topics.includes(item)) {
+          processedRequirements.topics.push(item);
+        }
+      });
+      
       // Log the exact payload being sent to the API for debugging
-      const payload = { url, requirements };
+      const payload = { url, requirements: processedRequirements };
       console.log('Sending payload to API:', JSON.stringify(payload));
       
       const response = await fetch(`${API_URL}/api/validate-tweet`, {
@@ -121,6 +135,11 @@ export const twitterCheckerService = {
         standardizedResponse.errors = rawData.errors;
       }
       
+      // In case validation is successful but there's no explicit pass/fail
+      if (rawData.success === true && standardizedResponse.passed === undefined) {
+        standardizedResponse.passed = true;
+      }
+      
       // Process detailed requirements results
       if (rawData.requirements && typeof rawData.requirements === 'object') {
         // Process hashtags
@@ -130,13 +149,13 @@ export const twitterCheckerService = {
             missing: Array.isArray(rawData.requirements.hashtags.missing) 
               ? rawData.requirements.hashtags.missing 
               : [],
-            required: requirements.hashtags
+            required: processedRequirements.hashtags
           };
         } else {
           standardizedResponse.requirements.hashtags = {
-            passed: requirements.hashtags.length === 0,
-            missing: requirements.hashtags,
-            required: requirements.hashtags
+            passed: processedRequirements.hashtags.length === 0,
+            missing: processedRequirements.hashtags,
+            required: processedRequirements.hashtags
           };
         }
         
@@ -147,13 +166,13 @@ export const twitterCheckerService = {
             missing: Array.isArray(rawData.requirements.mentions.missing) 
               ? rawData.requirements.mentions.missing 
               : [],
-            required: requirements.mentions
+            required: processedRequirements.mentions
           };
         } else {
           standardizedResponse.requirements.mentions = {
-            passed: requirements.mentions.length === 0,
-            missing: requirements.mentions,
-            required: requirements.mentions
+            passed: processedRequirements.mentions.length === 0,
+            missing: processedRequirements.mentions,
+            required: processedRequirements.mentions
           };
         }
         
@@ -164,13 +183,13 @@ export const twitterCheckerService = {
             missing: Array.isArray(rawData.requirements.topics.missing) 
               ? rawData.requirements.topics.missing 
               : [],
-            required: requirements.topics
+            required: processedRequirements.topics
           };
         } else {
           standardizedResponse.requirements.topics = {
-            passed: requirements.topics.length === 0,
-            missing: requirements.topics,
-            required: requirements.topics
+            passed: processedRequirements.topics.length === 0,
+            missing: processedRequirements.topics,
+            required: processedRequirements.topics
           };
         }
         
@@ -187,30 +206,36 @@ export const twitterCheckerService = {
         // If no detailed requirements in response, create default structure
         standardizedResponse.requirements = {
           hashtags: {
-            passed: requirements.hashtags.length === 0,
-            missing: requirements.hashtags,
-            required: requirements.hashtags
+            passed: processedRequirements.hashtags.length === 0,
+            missing: processedRequirements.hashtags,
+            required: processedRequirements.hashtags
           },
           mentions: {
-            passed: requirements.mentions.length === 0,
-            missing: requirements.mentions,
-            required: requirements.mentions
+            passed: processedRequirements.mentions.length === 0,
+            missing: processedRequirements.mentions,
+            required: processedRequirements.mentions
           },
           topics: {
-            passed: requirements.topics.length === 0,
-            missing: requirements.topics,
-            required: requirements.topics
+            passed: processedRequirements.topics.length === 0,
+            missing: processedRequirements.topics,
+            required: processedRequirements.topics
           }
         };
       }
       
-      // Calculate overall passed status based on all requirements
-      if (standardizedResponse.passed === undefined) {
-        const reqKeys = Object.keys(standardizedResponse.requirements);
-        const allPassed = reqKeys.length > 0 && reqKeys.every(key => {
-          return standardizedResponse.requirements[key]?.passed === true;
-        });
-        standardizedResponse.passed = allPassed;
+      // If API indicates overall success, override our calculated values
+      if (rawData.success === true && rawData.passed === true) {
+        standardizedResponse.passed = true;
+        
+        // Mark all requirements as passed
+        if (standardizedResponse.requirements) {
+          Object.keys(standardizedResponse.requirements).forEach(key => {
+            if (standardizedResponse.requirements[key]) {
+              standardizedResponse.requirements[key].passed = true;
+              standardizedResponse.requirements[key].missing = [];
+            }
+          });
+        }
       }
       
       console.log('Standardized validation response:', standardizedResponse);
