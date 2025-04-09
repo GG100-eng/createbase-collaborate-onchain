@@ -13,6 +13,7 @@ export interface PostMetrics {
 
 /**
  * Provides textual feedback based on engagement score
+ * This can be used with either backend-provided scores or locally calculated scores
  */
 export function getEngagementFeedback(score: number): string {
   if (score >= 90) return "Exceptional engagement";
@@ -24,6 +25,7 @@ export function getEngagementFeedback(score: number): string {
 
 /**
  * Calculates average engagement score from multiple submissions
+ * Used when aggregating metrics from multiple posts
  */
 export function calculateAverageEngagementScore(submissions: Array<{metrics: PostMetrics}>): number {
   if (submissions.length === 0) return 0;

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { 
   Eye, 
@@ -32,14 +33,18 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { mockSubmissions } from '@/lib/mock-data';
+import { mockSubmissions } from '@/lib/mock-data'; // TODO: Replace with API call when ready
 import { getEngagementFeedback } from '@/utils/engagementCalculator';
 
 const MySubmissions = () => {
   const [searchQuery, setSearchQuery] = useState('');
   
+  // TODO: Replace this with a real API call when backend is ready
+  // This is currently using mock data for demonstration purposes
+  const submissionsData = mockSubmissions;
+  
   // Filter submissions based on search query
-  const filteredSubmissions = mockSubmissions.filter(submission => 
+  const filteredSubmissions = submissionsData.filter(submission => 
     submission.campaignTitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
     submission.brand.toLowerCase().includes(searchQuery.toLowerCase())
   );
