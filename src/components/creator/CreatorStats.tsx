@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { 
   BarChart3, 
@@ -27,7 +28,19 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { mockSubmissions } from '@/lib/mock-data';
-import { calculateEngagementScore, calculateAverageEngagementScore } from '@/utils/engagementCalculator';
+import { calculateAverageEngagementScore } from '@/utils/engagementCalculator';
+import { 
+  ResponsiveContainer, 
+  AreaChart, 
+  Area, 
+  BarChart,
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  Legend,
+  Bar
+} from 'recharts';
 
 const performanceData = [
   { date: '04/01', engagementScore: 45, payout: 80 },
@@ -61,7 +74,7 @@ const CreatorStats = () => {
   // Calculate total payouts
   const totalPayouts = mockSubmissions.reduce((sum, sub) => sum + sub.estimatedPayout, 0);
   
-  // Calculate average engagement score from all submissions
+  // Get average engagement score from all submissions
   const averageEngagementScore = calculateAverageEngagementScore(mockSubmissions);
   
   // Create engagement data for chart based on actual metrics
@@ -95,21 +108,22 @@ const CreatorStats = () => {
     if (!acc[date]) {
       acc[date] = {
         submissions: [],
-        engagementScore: 0,
+        totalScore: 0,
         payout: 0
       };
     }
     
     acc[date].submissions.push(submission);
+    acc[date].totalScore += (submission.metrics.engagementScore || 0);
     acc[date].payout += submission.estimatedPayout;
     
     return acc;
-  }, {});
+  }, {} as Record<string, { submissions: typeof mockSubmissions, totalScore: number, payout: number }>);
   
   // Transform grouped data into chart format
   const calculatedPerformanceData = Object.entries(submissionsByDate).map(([date, data]) => {
     const avgScore = data.submissions.length > 0 
-      ? calculateAverageEngagementScore(data.submissions)
+      ? Math.round(data.totalScore / data.submissions.length)
       : 0;
       
     return {
@@ -172,7 +186,7 @@ const CreatorStats = () => {
           <CardContent>
             <p className="text-xs text-muted-foreground flex items-center gap-1">
               <TrendingUp className="h-3 w-3 text-green-500" />
-              Based on weighted metrics
+              Based on submission metrics
             </p>
           </CardContent>
         </Card>

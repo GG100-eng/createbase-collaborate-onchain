@@ -33,7 +33,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { mockSubmissions } from '@/lib/mock-data';
-import { calculateEngagementScore } from '@/utils/engagementCalculator';
+import { getEngagementFeedback } from '@/utils/engagementCalculator';
 
 const MySubmissions = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -44,30 +44,15 @@ const MySubmissions = () => {
     submission.brand.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Calculate engagement scores for all submissions
-  const submissionsWithCalculatedScores = filteredSubmissions.map(submission => {
-    // Calculate engagement score from metrics
-    const engagementScore = calculateEngagementScore(submission.metrics);
-    
-    // Create a new submission object with calculated score
-    return {
-      ...submission,
-      metrics: {
-        ...submission.metrics,
-        engagementScore
-      }
-    };
-  });
-
   // Find the Base campaign submission
-  const baseCampaignSubmission = submissionsWithCalculatedScores.find(
+  const baseCampaignSubmission = filteredSubmissions.find(
     submission => submission.campaignId === "c007"
   );
   
   // Filter out the base campaign from regular submissions if it exists
   const regularSubmissions = baseCampaignSubmission 
-    ? submissionsWithCalculatedScores.filter(submission => submission.campaignId !== "c007")
-    : submissionsWithCalculatedScores;
+    ? filteredSubmissions.filter(submission => submission.campaignId !== "c007")
+    : filteredSubmissions;
 
   const renderSubmissionCard = (submission) => (
     <Card key={submission.id} className="overflow-hidden">
@@ -184,6 +169,9 @@ const MySubmissions = () => {
                 <p className="font-bold">{submission.metrics.engagementScore}/100</p>
               </div>
               <Progress value={submission.metrics.engagementScore} className="h-2" />
+              <p className="text-xs text-muted-foreground mt-1">
+                {getEngagementFeedback(submission.metrics.engagementScore)}
+              </p>
             </div>
             
             {submission.leaderboardPosition && (
