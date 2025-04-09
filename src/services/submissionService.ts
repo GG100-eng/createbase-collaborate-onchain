@@ -19,7 +19,9 @@ export const fetchSubmissions = async (): Promise<Submission[]> => {
       throw new Error('API response is not in JSON format');
     }
     
-    return response.json();
+    const submissions = await response.json();
+    // Sort submissions by date, most recent first
+    return sortSubmissionsByDate(submissions);
   } catch (error) {
     console.error('Error fetching submissions from API:', error);
     toast({
@@ -28,8 +30,8 @@ export const fetchSubmissions = async (): Promise<Submission[]> => {
       variant: "default",
     });
     
-    // Fall back to mock data
-    return mockSubmissions;
+    // Fall back to mock data, sorted by date
+    return sortSubmissionsByDate([...mockSubmissions]);
   }
 };
 
@@ -58,4 +60,15 @@ export const fetchSubmissionById = async (id: string): Promise<Submission | unde
     // Fall back to mock data
     return mockSubmissions.find(sub => sub.id === id);
   }
+};
+
+/**
+ * Helper function to sort submissions by date (most recent first)
+ */
+const sortSubmissionsByDate = (submissions: Submission[]): Submission[] => {
+  return submissions.sort((a, b) => {
+    const dateA = new Date(a.submittedAt).getTime();
+    const dateB = new Date(b.submittedAt).getTime();
+    return dateB - dateA; // Sort in descending order (newest first)
+  });
 };
