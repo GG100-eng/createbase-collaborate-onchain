@@ -9,6 +9,7 @@ import ForCreators from '@/components/ForCreators';
 import CollaborationBenefits from '@/components/CollaborationBenefits';
 import CallToAction from '@/components/CallToAction';
 import Footer from '@/components/Footer';
+import { Toaster } from '@/components/ui/toaster';
 
 const Index = () => {
   return (
@@ -24,6 +25,7 @@ const Index = () => {
         <CallToAction />
       </main>
       <Footer />
+      <Toaster />
     </div>
   );
 };

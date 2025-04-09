@@ -1,9 +1,9 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Link, LinkIcon, AlertCircle } from 'lucide-react';
+import { Link, LinkIcon, AlertCircle, Check, X } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -26,6 +26,7 @@ import {
 } from '@/components/ui/select';
 import { Campaign } from '@/lib/mock-data';
 import { useToast } from '@/hooks/use-toast';
+import { twitterCheckerService, TweetValidationResult } from '@/services/twitterCheckerService';
 
 const formSchema = z.object({
   contentUrl: z.string().url({
@@ -49,6 +50,8 @@ const CampaignSubmissionForm = ({
   onCancel,
 }: CampaignSubmissionFormProps) => {
   const { toast } = useToast();
+  const [isValidating, setIsValidating] = useState(false);
+  const [validationResult, setValidationResult] = useState<TweetValidationResult | null>(null);
   
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -59,7 +62,77 @@ const CampaignSubmissionForm = ({
     },
   });
 
-  const onSubmit = (data: FormValues) => {
+  const onSubmit = async (data: FormValues) => {
+    // Reset previous validation results
+    setValidationResult(null);
+    
+    // If it's a Twitter URL, validate it
+    if (data.contentPlatform === 'twitter') {
+      setIsValidating(true);
+      
+      try {
+        // First check if the URL format is valid
+        const urlCheck = await twitterCheckerService.checkTweetUrl(data.contentUrl);
+        
+        if (!urlCheck.valid) {
+          toast({
+            title: "Invalid Tweet URL",
+            description: "Please provide a valid Twitter/X URL.",
+            variant: "destructive",
+          });
+          setIsValidating(false);
+          return;
+        }
+        
+        // Prepare requirements based on campaign data
+        const requirements = {
+          hashtags: campaign.requiredTags || [],
+          mentions: campaign.requiredMentions || [],
+          topics: campaign.requiredTopics || []
+        };
+        
+        // Validate tweet against requirements
+        const validation = await twitterCheckerService.validateTweet(
+          data.contentUrl, 
+          requirements
+        );
+        
+        setValidationResult(validation);
+        
+        // If validation failed, stop and show errors
+        if (!validation.success || !validation.passed) {
+          const errorMessage = validation.errors?.join(", ") || 
+            "Your tweet doesn't meet all campaign requirements.";
+            
+          toast({
+            title: "Tweet Validation Failed",
+            description: errorMessage,
+            variant: "destructive",
+          });
+          
+          setIsValidating(false);
+          return;
+        }
+        
+        // If validation passed, show success message
+        toast({
+          title: "Tweet Validation Successful",
+          description: "Your content has been validated and meets all requirements!",
+        });
+        
+        // Continue with submission process
+      } catch (error) {
+        console.error("Error during tweet validation:", error);
+        toast({
+          title: "Validation Error",
+          description: "An error occurred while validating your content. Please try again.",
+          variant: "destructive",
+        });
+        setIsValidating(false);
+        return;
+      }
+    }
+    
     // In a real app, you would send this data to your backend
     console.log('Submission data:', data);
     
@@ -69,8 +142,29 @@ const CampaignSubmissionForm = ({
         title: 'Submission successful!',
         description: 'Your content has been submitted for review.',
       });
+      setIsValidating(false);
       onSuccess();
     }, 1000);
+  };
+  
+  // Platform-specific label for content URL
+  const getUrlFieldLabel = () => {
+    switch (form.watch('contentPlatform')) {
+      case 'twitter': return 'Tweet URL';
+      case 'farcaster': return 'Cast URL';
+      case 'lens': return 'Lens Post URL';
+      default: return 'Content URL';
+    }
+  };
+
+  // Platform-specific placeholder for content URL
+  const getUrlFieldPlaceholder = () => {
+    switch (form.watch('contentPlatform')) {
+      case 'twitter': return 'https://twitter.com/username/status/123456789';
+      case 'farcaster': return 'https://warpcast.com/username/0x123456789';
+      case 'lens': return 'https://hey.xyz/posts/0x123456789';
+      default: return 'https://example.com/your-content';
+    }
   };
 
   return (
@@ -84,11 +178,22 @@ const CampaignSubmissionForm = ({
           <div className="mt-2 text-sm text-amber-700 space-y-1">
             {campaign.requiredTags && campaign.requiredTags.length > 0 && (
               <p>
-                Your post must include:{' '}
+                Required hashtags:{' '}
                 {campaign.requiredTags.map((tag, i) => (
                   <span key={tag} className="font-medium">
                     {tag}
                     {i < campaign.requiredTags.length - 1 ? ', ' : ''}
+                  </span>
+                ))}
+              </p>
+            )}
+            {campaign.requiredMentions && campaign.requiredMentions.length > 0 && (
+              <p>
+                Required mentions:{' '}
+                {campaign.requiredMentions.map((mention, i) => (
+                  <span key={mention} className="font-medium">
+                    {mention}
+                    {i < campaign.requiredMentions.length - 1 ? ', ' : ''}
                   </span>
                 ))}
               </p>
@@ -129,7 +234,7 @@ const CampaignSubmissionForm = ({
           name="contentUrl"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Content URL</FormLabel>
+              <FormLabel>{getUrlFieldLabel()}</FormLabel>
               <FormControl>
                 <div className="flex">
                   <div className="relative flex-grow">
@@ -137,7 +242,7 @@ const CampaignSubmissionForm = ({
                       <LinkIcon className="h-4 w-4" />
                     </div>
                     <Input 
-                      placeholder="https://twitter.com/yourusername/status/123456789" 
+                      placeholder={getUrlFieldPlaceholder()} 
                       className="pl-10"
                       {...field} 
                     />
@@ -151,6 +256,61 @@ const CampaignSubmissionForm = ({
             </FormItem>
           )}
         />
+
+        {/* Validation Result Display */}
+        {validationResult && (
+          <div className={`p-4 my-4 rounded-md ${
+            validationResult.passed ? 'bg-green-50 border border-green-200' : 
+            'bg-red-50 border border-red-200'
+          }`}>
+            <h3 className="font-medium flex items-center gap-2 mb-2">
+              {validationResult.passed ? (
+                <>
+                  <Check className="h-4 w-4 text-green-600" />
+                  <span className="text-green-800">Validation Passed</span>
+                </>
+              ) : (
+                <>
+                  <X className="h-4 w-4 text-red-600" />
+                  <span className="text-red-800">Validation Failed</span>
+                </>
+              )}
+            </h3>
+            
+            {validationResult.requirements && (
+              <div className="space-y-2 text-sm">
+                {Object.entries(validationResult.requirements).map(([key, value]) => (
+                  <div key={key} className="flex items-start gap-2">
+                    {value.passed ? (
+                      <Check className="h-4 w-4 text-green-600 mt-0.5" />
+                    ) : (
+                      <X className="h-4 w-4 text-red-600 mt-0.5" />
+                    )}
+                    <div>
+                      <span className="font-medium">{key.charAt(0).toUpperCase() + key.slice(1)}</span>
+                      {!value.passed && value.missing?.length > 0 && (
+                        <span className="block text-xs text-red-600">
+                          Missing: {value.missing.join(', ')}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            
+            {validationResult.errors?.length > 0 && (
+              <div className="mt-2 text-sm text-red-600">
+                <span className="font-medium">Errors:</span>
+                <ul className="list-disc pl-4 mt-1">
+                  {validationResult.errors.map((error, index) => (
+                    <li key={index}>{error}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
 
         <FormField
           control={form.control}
@@ -177,8 +337,8 @@ const CampaignSubmissionForm = ({
           <Button variant="outline" type="button" onClick={onCancel}>
             Cancel
           </Button>
-          <Button type="submit">
-            Submit Content
+          <Button type="submit" disabled={isValidating}>
+            {isValidating ? 'Validating...' : 'Submit Content'}
           </Button>
         </div>
       </form>
@@ -187,3 +347,4 @@ const CampaignSubmissionForm = ({
 };
 
 export default CampaignSubmissionForm;
+

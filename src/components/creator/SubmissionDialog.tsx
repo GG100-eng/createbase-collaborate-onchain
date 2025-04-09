@@ -29,11 +29,12 @@ const SubmissionDialog = ({ campaign, open, onOpenChange }: SubmissionDialogProp
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Submit Content for {campaign.title}</DialogTitle>
           <DialogDescription>
             Please provide the URL to your published content related to this campaign.
+            All submissions will be validated against campaign requirements.
           </DialogDescription>
         </DialogHeader>
         <CampaignSubmissionForm 
