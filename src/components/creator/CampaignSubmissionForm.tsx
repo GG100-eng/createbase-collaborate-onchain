@@ -118,9 +118,29 @@ const CampaignSubmissionForm = ({
         }
         
         // If validation failed, stop and show errors
-        if (!validation.success || validation.passed === false) {
+        if (!validation.success) {
+          toast({
+            title: "API Error",
+            description: "There was an error validating your tweet. Please try again.",
+            variant: "destructive",
+          });
+          setIsValidating(false);
+          return;
+        }
+        
+        // Log the passed status to help with debugging
+        console.log('Overall validation passed status:', validation.passed);
+        
+        // Show toast based on validation result
+        if (validation.passed) {
+          toast({
+            title: "Tweet Validation Successful",
+            description: "Your content has been validated and meets all requirements!",
+          });
+        } else {
+          // Get a meaningful error message
           const errorMessage = validation.errors?.join(", ") || 
-            "Your tweet doesn't meet all campaign requirements.";
+            "Your tweet doesn't meet all campaign requirements. Please check the details below.";
             
           toast({
             title: "Tweet Validation Failed",
@@ -132,14 +152,19 @@ const CampaignSubmissionForm = ({
           return;
         }
         
-        // If validation passed, show success message
-        toast({
-          title: "Tweet Validation Successful",
-          description: "Your content has been validated and meets all requirements!",
-        });
-        
-        // Continue with submission process
+        // Continue with submission process if validation passed
         console.log('Validation passed, continuing with submission');
+        
+        // In a real app, you would send this data to your backend
+        setTimeout(() => {
+          toast({
+            title: 'Submission successful!',
+            description: 'Your content has been submitted for review.',
+          });
+          setIsValidating(false);
+          onSuccess();
+        }, 1000);
+        
       } catch (error) {
         console.error("Error during tweet validation:", error);
         toast({
@@ -148,22 +173,21 @@ const CampaignSubmissionForm = ({
           variant: "destructive",
         });
         setIsValidating(false);
-        return;
       }
+    } else {
+      // For non-Twitter platforms, just submit without validation
+      console.log('Submission data for non-Twitter platform:', data);
+      
+      // Simulate success response
+      setTimeout(() => {
+        toast({
+          title: 'Submission successful!',
+          description: 'Your content has been submitted for review.',
+        });
+        setIsValidating(false);
+        onSuccess();
+      }, 1000);
     }
-    
-    // In a real app, you would send this data to your backend
-    console.log('Submission data:', data);
-    
-    // Simulate success response
-    setTimeout(() => {
-      toast({
-        title: 'Submission successful!',
-        description: 'Your content has been submitted for review.',
-      });
-      setIsValidating(false);
-      onSuccess();
-    }, 1000);
   };
   
   // Platform-specific label for content URL
@@ -324,10 +348,15 @@ const CampaignSubmissionForm = ({
                         <X className="h-4 w-4 text-red-600 mt-0.5" />
                       )}
                       <div>
-                        <span className="font-medium">{key.charAt(0).toUpperCase() + key.slice(1)}</span>
+                        <span className="font-medium capitalize">{key}</span>
                         {!value.passed && value.missing?.length > 0 && (
                           <span className="block text-xs text-red-600">
                             Missing: {value.missing.join(', ')}
+                          </span>
+                        )}
+                        {value.required && value.required.length > 0 && (
+                          <span className="block text-xs text-slate-600">
+                            Required: {value.required.join(', ')}
                           </span>
                         )}
                       </div>
