@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState } from 'react';
 import { 
   Eye, 
   ThumbsUp, 
@@ -40,10 +41,12 @@ import { useQuery } from '@tanstack/react-query';
 const MySubmissions = () => {
   const [searchQuery, setSearchQuery] = useState('');
   
-  // Fetch submissions from the API
-  const { data: submissionsData, isLoading, error } = useQuery({
+  // Fetch submissions from the API with refetch enabled
+  const { data: submissionsData, isLoading, error, refetch } = useQuery({
     queryKey: ['submissions'],
     queryFn: fetchSubmissions,
+    refetchOnWindowFocus: true,
+    staleTime: 10000, // Consider data stale after 10 seconds
   });
   
   // If loading or error, handle appropriately

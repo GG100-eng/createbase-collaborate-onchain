@@ -20,15 +20,10 @@ export const fetchSubmissions = async (): Promise<Submission[]> => {
     }
     
     const submissions = await response.json();
-    // Sort submissions by date, most recent first
     return sortSubmissionsByDate(submissions);
   } catch (error) {
     console.error('Error fetching submissions from API:', error);
-    toast({
-      title: "Using mock data",
-      description: "Could not connect to API. Using sample data instead.",
-      variant: "default",
-    });
+    console.log('Falling back to mock data');
     
     // Fall back to mock data, sorted by date
     return sortSubmissionsByDate([...mockSubmissions]);
@@ -51,11 +46,6 @@ export const fetchSubmissionById = async (id: string): Promise<Submission | unde
     return response.json();
   } catch (error) {
     console.error(`Error fetching submission ${id} from API:`, error);
-    toast({
-      title: "Using mock data",
-      description: `Could not fetch submission ${id} from API. Using sample data instead.`,
-      variant: "default",
-    });
     
     // Fall back to mock data
     return mockSubmissions.find(sub => sub.id === id);
