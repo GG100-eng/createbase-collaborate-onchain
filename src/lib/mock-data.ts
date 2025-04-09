@@ -1,4 +1,3 @@
-
 export interface Campaign {
   id: string;
   title: string;
@@ -10,6 +9,8 @@ export interface Campaign {
   deadline: string;
   status: 'live' | 'pending' | 'closed';
   requiredTags: string[];
+  requiredMentions?: string[];
+  requiredTopics?: string[];
   submissions: number;
   budgetRemaining: number;
   payoutModel: 'fixed' | 'engagement' | 'hybrid';
@@ -49,6 +50,8 @@ export const mockCampaigns: Campaign[] = [
     deadline: "2025-04-14",
     status: 'live',
     requiredTags: ["#BuildOnBase", "base.org/batches", "@base", "Base Batches"],
+    requiredMentions: ["@base"],
+    requiredTopics: ["Base Batches", "Layer 2 blockchain"],
     submissions: 12,
     budgetRemaining: 2000,
     payoutModel: 'engagement'
@@ -64,6 +67,8 @@ export const mockCampaigns: Campaign[] = [
     deadline: "2025-05-15",
     status: 'live',
     requiredTags: ["#DeFiSuccess", "#BuildOnBase", "@defialliance"],
+    requiredMentions: ["@defialliance"],
+    requiredTopics: ["DeFi", "Financial freedom"],
     submissions: 42,
     budgetRemaining: 24500,
     payoutModel: 'engagement'
@@ -79,6 +84,8 @@ export const mockCampaigns: Campaign[] = [
     deadline: "2025-04-30",
     status: 'live',
     requiredTags: ["#ChainQuest", "#GameOnchain", "@chainquest"],
+    requiredMentions: ["@chainquest"],
+    requiredTopics: ["Blockchain", "Game development"],
     submissions: 67,
     budgetRemaining: 15600,
     payoutModel: 'fixed'
@@ -94,6 +101,8 @@ export const mockCampaigns: Campaign[] = [
     deadline: "2025-05-10",
     status: 'live',
     requiredTags: ["#PixelVerseNFT", "#NFTReview", "@pixelverse"],
+    requiredMentions: ["@pixelverse"],
+    requiredTopics: ["NFT", "Art"],
     submissions: 29,
     budgetRemaining: 42000,
     payoutModel: 'hybrid'
@@ -109,6 +118,8 @@ export const mockCampaigns: Campaign[] = [
     deadline: "2025-04-25",
     status: 'pending',
     requiredTags: ["#WalletSecurity", "#CryptoSafety", "@securechain"],
+    requiredMentions: ["@securechain"],
+    requiredTopics: ["Wallet security", "Cryptocurrency"],
     submissions: 53,
     budgetRemaining: 18700,
     payoutModel: 'fixed'
@@ -124,6 +135,8 @@ export const mockCampaigns: Campaign[] = [
     deadline: "2025-05-20",
     status: 'live',
     requiredTags: ["#Layer2", "#Scaling", "@scalenet"],
+    requiredMentions: ["@scalenet"],
+    requiredTopics: ["Layer 2", "Blockchain technology"],
     submissions: 38,
     budgetRemaining: 32250,
     payoutModel: 'engagement'
@@ -139,6 +152,8 @@ export const mockCampaigns: Campaign[] = [
     deadline: "2025-04-18",
     status: 'closed',
     requiredTags: ["#CryptoTrading", "#TradeTips", "@tradecrypto"],
+    requiredMentions: ["@tradecrypto"],
+    requiredTopics: ["Crypto trading", "Investing"],
     submissions: 75,
     budgetRemaining: 0,
     payoutModel: 'hybrid'

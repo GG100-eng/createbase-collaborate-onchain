@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -198,6 +197,17 @@ const CampaignSubmissionForm = ({
                 ))}
               </p>
             )}
+            {campaign.requiredTopics && campaign.requiredTopics.length > 0 && (
+              <p>
+                Required topics:{' '}
+                {campaign.requiredTopics.map((topic, i) => (
+                  <span key={topic} className="font-medium">
+                    {topic}
+                    {i < campaign.requiredTopics.length - 1 ? ', ' : ''}
+                  </span>
+                ))}
+              </p>
+            )}
             <p>Make sure your content follows the campaign guidelines before submitting.</p>
           </div>
         </div>
@@ -347,4 +357,3 @@ const CampaignSubmissionForm = ({
 };
 
 export default CampaignSubmissionForm;
-
