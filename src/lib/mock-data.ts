@@ -1,3 +1,4 @@
+
 export interface Campaign {
   id: string;
   title: string;
@@ -11,6 +12,7 @@ export interface Campaign {
   requiredTags: string[];
   requiredMentions?: string[];
   requiredTopics?: string[];
+  requiredUrls?: string[];
   submissions: number;
   budgetRemaining: number;
   payoutModel: 'fixed' | 'engagement' | 'hybrid';
