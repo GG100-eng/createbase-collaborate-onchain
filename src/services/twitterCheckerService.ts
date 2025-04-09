@@ -56,6 +56,16 @@ export const twitterCheckerService = {
   async checkTweetUrl(url: string): Promise<TweetUrlCheckResult> {
     try {
       console.log('Checking tweet URL validity:', url);
+      
+      // Basic Twitter/X URL format validation
+      const isTwitterUrl = url.match(/(twitter\.com|x\.com)\/\w+\/status\/\d+/i);
+      if (!isTwitterUrl) {
+        return { 
+          valid: false, 
+          error: "URL must be a valid Twitter/X tweet URL (e.g., https://twitter.com/username/status/123456789)"
+        };
+      }
+      
       const response = await fetch(`${API_URL}/api/check-tweet-id`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -71,31 +81,18 @@ export const twitterCheckerService = {
     }
   },
   
-  // Full tweet validation
+  // Full tweet validation without preprocessing
   async validateTweet(url: string, requirements: {
     hashtags: string[];
     mentions: string[];
     topics: string[];
+    urls?: string[];
   }): Promise<TweetValidationResult> {
     try {
       console.log('Validating tweet with requirements:', { url, requirements });
       
-      // Pre-process hashtags to ensure proper format
-      const processedRequirements = {
-        hashtags: requirements.hashtags.filter(tag => tag.startsWith('#')),
-        mentions: requirements.mentions,
-        topics: [...requirements.topics]
-      };
-      
-      // Move non-hashtag items from hashtags array to topics
-      requirements.hashtags.forEach(item => {
-        if (!item.startsWith('#') && !processedRequirements.topics.includes(item)) {
-          processedRequirements.topics.push(item);
-        }
-      });
-      
-      // Log the exact payload being sent to the API for debugging
-      const payload = { url, requirements: processedRequirements };
+      // Send requirements to API without preprocessing
+      const payload = { url, requirements };
       console.log('Sending payload to API:', JSON.stringify(payload));
       
       const response = await fetch(`${API_URL}/api/validate-tweet`, {
@@ -107,7 +104,7 @@ export const twitterCheckerService = {
       const rawData = await response.json();
       console.log('Raw tweet validation response:', rawData);
       
-      // Process the API response more carefully
+      // Process the API response
       if (!rawData || typeof rawData !== 'object') {
         console.error('Invalid API response format:', rawData);
         return {
@@ -117,129 +114,16 @@ export const twitterCheckerService = {
         };
       }
       
-      // Build a standardized response with proper structure
-      const standardizedResponse: TweetValidationResult = {
-        success: true, // We got a response, so API call succeeded
-        passed: false, // Will be updated based on requirements check
-        errors: [],
-        requirements: {}
+      // Return the response directly with minimal processing
+      const result: TweetValidationResult = {
+        success: true,
+        passed: rawData.passed === true,
+        errors: Array.isArray(rawData.errors) ? rawData.errors : [],
+        requirements: rawData.requirements || {}
       };
       
-      // Get overall pass/fail status if available
-      if (typeof rawData.passed === 'boolean') {
-        standardizedResponse.passed = rawData.passed;
-      }
-      
-      // Get errors if available
-      if (Array.isArray(rawData.errors)) {
-        standardizedResponse.errors = rawData.errors;
-      }
-      
-      // In case validation is successful but there's no explicit pass/fail
-      if (rawData.success === true && standardizedResponse.passed === undefined) {
-        standardizedResponse.passed = true;
-      }
-      
-      // Process detailed requirements results
-      if (rawData.requirements && typeof rawData.requirements === 'object') {
-        // Process hashtags
-        if (rawData.requirements.hashtags) {
-          standardizedResponse.requirements.hashtags = {
-            passed: rawData.requirements.hashtags.passed === true,
-            missing: Array.isArray(rawData.requirements.hashtags.missing) 
-              ? rawData.requirements.hashtags.missing 
-              : [],
-            required: processedRequirements.hashtags
-          };
-        } else {
-          standardizedResponse.requirements.hashtags = {
-            passed: processedRequirements.hashtags.length === 0,
-            missing: processedRequirements.hashtags,
-            required: processedRequirements.hashtags
-          };
-        }
-        
-        // Process mentions
-        if (rawData.requirements.mentions) {
-          standardizedResponse.requirements.mentions = {
-            passed: rawData.requirements.mentions.passed === true,
-            missing: Array.isArray(rawData.requirements.mentions.missing) 
-              ? rawData.requirements.mentions.missing 
-              : [],
-            required: processedRequirements.mentions
-          };
-        } else {
-          standardizedResponse.requirements.mentions = {
-            passed: processedRequirements.mentions.length === 0,
-            missing: processedRequirements.mentions,
-            required: processedRequirements.mentions
-          };
-        }
-        
-        // Process topics
-        if (rawData.requirements.topics) {
-          standardizedResponse.requirements.topics = {
-            passed: rawData.requirements.topics.passed === true,
-            missing: Array.isArray(rawData.requirements.topics.missing) 
-              ? rawData.requirements.topics.missing 
-              : [],
-            required: processedRequirements.topics
-          };
-        } else {
-          standardizedResponse.requirements.topics = {
-            passed: processedRequirements.topics.length === 0,
-            missing: processedRequirements.topics,
-            required: processedRequirements.topics
-          };
-        }
-        
-        // Check if rawData has a urls field
-        if (rawData.requirements.urls) {
-          standardizedResponse.requirements.urls = {
-            passed: rawData.requirements.urls.passed === true,
-            missing: Array.isArray(rawData.requirements.urls.missing) 
-              ? rawData.requirements.urls.missing 
-              : []
-          };
-        }
-      } else {
-        // If no detailed requirements in response, create default structure
-        standardizedResponse.requirements = {
-          hashtags: {
-            passed: processedRequirements.hashtags.length === 0,
-            missing: processedRequirements.hashtags,
-            required: processedRequirements.hashtags
-          },
-          mentions: {
-            passed: processedRequirements.mentions.length === 0,
-            missing: processedRequirements.mentions,
-            required: processedRequirements.mentions
-          },
-          topics: {
-            passed: processedRequirements.topics.length === 0,
-            missing: processedRequirements.topics,
-            required: processedRequirements.topics
-          }
-        };
-      }
-      
-      // If API indicates overall success, override our calculated values
-      if (rawData.success === true && rawData.passed === true) {
-        standardizedResponse.passed = true;
-        
-        // Mark all requirements as passed
-        if (standardizedResponse.requirements) {
-          Object.keys(standardizedResponse.requirements).forEach(key => {
-            if (standardizedResponse.requirements[key]) {
-              standardizedResponse.requirements[key].passed = true;
-              standardizedResponse.requirements[key].missing = [];
-            }
-          });
-        }
-      }
-      
-      console.log('Standardized validation response:', standardizedResponse);
-      return standardizedResponse;
+      console.log('Standardized validation response:', result);
+      return result;
     } catch (error) {
       console.error("Error validating tweet:", error);
       return { 

@@ -79,7 +79,7 @@ const CampaignSubmissionForm = ({
         if (!urlCheck.valid) {
           toast({
             title: "Invalid Tweet URL",
-            description: "Please provide a valid Twitter/X URL.",
+            description: urlCheck.error || "Please provide a valid Twitter/X URL.",
             variant: "destructive",
           });
           setIsValidating(false);
@@ -90,12 +90,13 @@ const CampaignSubmissionForm = ({
         const requirements = {
           hashtags: campaign.requiredTags || [],
           mentions: campaign.requiredMentions || [],
-          topics: campaign.requiredTopics || []
+          topics: campaign.requiredTopics || [],
+          urls: campaign.requiredUrls || []
         };
         
         console.log('Validating with these requirements:', requirements);
         
-        // Validate tweet against requirements
+        // Validate tweet against requirements without preprocessing
         const validation = await twitterCheckerService.validateTweet(
           data.contentUrl, 
           requirements
@@ -104,19 +105,7 @@ const CampaignSubmissionForm = ({
         console.log('Validation complete. Result:', validation);
         setValidationResult(validation);
         
-        // Force the validation result to be displayed even if there's an issue with the response format
-        if (!validation || typeof validation !== 'object') {
-          console.error('Invalid validation response format:', validation);
-          toast({
-            title: "Validation Error",
-            description: "Received invalid response format from validation service.",
-            variant: "destructive",
-          });
-          setIsValidating(false);
-          return;
-        }
-        
-        // If validation failed, stop and show errors
+        // If validation failed API-wise, show error
         if (!validation.success) {
           toast({
             title: "API Error",
@@ -246,6 +235,17 @@ const CampaignSubmissionForm = ({
                   <span key={topic} className="font-medium">
                     {topic}
                     {i < campaign.requiredTopics.length - 1 ? ', ' : ''}
+                  </span>
+                ))}
+              </p>
+            )}
+            {campaign.requiredUrls && campaign.requiredUrls.length > 0 && (
+              <p>
+                Required URLs:{' '}
+                {campaign.requiredUrls.map((url, i) => (
+                  <span key={url} className="font-medium">
+                    {url}
+                    {i < campaign.requiredUrls.length - 1 ? ', ' : ''}
                   </span>
                 ))}
               </p>
