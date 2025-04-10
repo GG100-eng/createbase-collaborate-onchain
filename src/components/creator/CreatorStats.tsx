@@ -67,7 +67,7 @@ const CreatorStats = () => {
   
   // If loading or error, handle appropriately
   if (isLoading) return <div className="py-10 text-center">Loading stats...</div>;
-  if (error) return <div className="py-10 text-center text-red-500">Error loading stats: {error.message}</div>;
+  if (error) return <div className="py-10 text-center text-red-500">Error loading stats: {error instanceof Error ? error.message : 'Unknown error'}</div>;
   if (!submissionsData || submissionsData.length === 0) {
     return <div className="py-10 text-center">No submission data available to display stats</div>;
   }
@@ -85,7 +85,7 @@ const CreatorStats = () => {
   const rejectedSubmissions = submissionsData.filter(sub => sub.status === 'rejected').length;
   
   // Calculate total payouts
-  const totalPayouts = submissionsData.reduce((sum, sub) => sum + sub.estimatedPayout, 0);
+  const totalPayouts = submissionsData.reduce((sum, sub) => sum + (sub.estimatedPayout || 0), 0);
   
   // Get average engagement score from all submissions
   const averageEngagementScore = calculateAverageEngagementScore(submissionsData);
@@ -94,19 +94,19 @@ const CreatorStats = () => {
   const calculatedEngagementBreakdown = [
     { 
       name: 'Views', 
-      value: submissionsData.reduce((sum, sub) => sum + sub.metrics.views, 0) 
+      value: submissionsData.reduce((sum, sub) => sum + (sub.metrics?.views || 0), 0) 
     },
     { 
       name: 'Likes', 
-      value: submissionsData.reduce((sum, sub) => sum + sub.metrics.likes, 0) 
+      value: submissionsData.reduce((sum, sub) => sum + (sub.metrics?.likes || 0), 0) 
     },
     { 
       name: 'Comments', 
-      value: submissionsData.reduce((sum, sub) => sum + sub.metrics.comments, 0) 
+      value: submissionsData.reduce((sum, sub) => sum + (sub.metrics?.comments || 0), 0) 
     },
     { 
       name: 'Reposts', 
-      value: submissionsData.reduce((sum, sub) => sum + sub.metrics.reposts, 0) 
+      value: submissionsData.reduce((sum, sub) => sum + (sub.metrics?.reposts || 0), 0) 
     },
   ];
   
@@ -127,8 +127,8 @@ const CreatorStats = () => {
     }
     
     acc[date].submissions.push(submission);
-    acc[date].totalScore += (submission.metrics.engagementScore || 0);
-    acc[date].payout += submission.estimatedPayout;
+    acc[date].totalScore += (submission.metrics?.engagementScore || 0);
+    acc[date].payout += (submission.estimatedPayout || 0);
     
     return acc;
   }, {} as Record<string, { submissions: typeof submissionsData, totalScore: number, payout: number }>);
@@ -207,7 +207,7 @@ const CreatorStats = () => {
         <Card>
           <CardHeader className="pb-2">
             <CardDescription>Total Earned</CardDescription>
-            <CardTitle className="text-3xl">${totalPayouts}</CardTitle>
+            <CardTitle className="text-3xl">${totalPayouts.toFixed(2)}</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-xs text-muted-foreground flex items-center gap-1">

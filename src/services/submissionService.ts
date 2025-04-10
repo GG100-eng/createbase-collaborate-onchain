@@ -5,7 +5,10 @@ import { Submission, mockSubmissions } from '@/lib/mock-data';
  * Service to fetch submission data from the real API
  * Falls back to mock data if API is unavailable
  */
-export const fetchSubmissions = async (campaignId?: string): Promise<Submission[]> => {
+export const fetchSubmissions = async ({ queryKey }: { queryKey: string[] }): Promise<Submission[]> => {
+  // Extract campaignId from queryKey if present (queryKey[1])
+  const campaignId = queryKey.length > 1 ? queryKey[1] as string : undefined;
+  
   try {
     // Force non-cached response with a random query parameter
     const timestamp = new Date().getTime();
@@ -50,7 +53,10 @@ export const fetchSubmissions = async (campaignId?: string): Promise<Submission[
   }
 };
 
-export const fetchSubmissionById = async (id: string): Promise<Submission | undefined> => {
+export const fetchSubmissionById = async ({ queryKey }: { queryKey: string[] }): Promise<Submission | undefined> => {
+  // Extract id from queryKey (queryKey[1])
+  const id = queryKey[1] as string;
+  
   try {
     const timestamp = new Date().getTime();
     const response = await fetch(`/api/submissions/${id}?t=${timestamp}`);

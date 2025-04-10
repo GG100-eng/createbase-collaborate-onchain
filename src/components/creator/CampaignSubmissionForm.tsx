@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -39,6 +40,25 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
+// Define TypeScript interfaces for validation result structure
+interface ValidationRequirement {
+  passed: boolean;
+  required?: string[];
+  missing?: string[];
+}
+
+interface ValidationResult {
+  passed: boolean;
+  errors?: string[];
+  requirements?: {
+    [key: string]: ValidationRequirement;
+  };
+}
+
+interface SubmissionResponse {
+  validation?: ValidationResult;
+}
+
 interface CampaignSubmissionFormProps {
   campaign: Campaign;
   onSuccess: () => void;
@@ -54,7 +74,7 @@ const CampaignSubmissionForm = ({
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [validationResult, setValidationResult] = useState<any | null>(null);
+  const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
   
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -79,7 +99,7 @@ const CampaignSubmissionForm = ({
         data.contentUrl,
         data.contentPlatform,
         data.notes
-      );
+      ) as SubmissionResponse;
       
       console.log('Submission result:', result);
       
