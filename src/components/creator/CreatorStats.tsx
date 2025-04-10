@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { 
   BarChart3, 
@@ -57,6 +58,13 @@ const engagementBreakdown = [
   { name: 'Comments', value: 249 },
   { name: 'Reposts', value: 152 },
 ];
+
+// Define the GroupedSubmission interface for type safety
+interface GroupedSubmission {
+  submissions: any[];
+  totalScore: number;
+  payout: number;
+}
 
 const CreatorStats = () => {
   // Fetch submissions from the API
@@ -131,18 +139,19 @@ const CreatorStats = () => {
     acc[date].payout += (submission.estimatedPayout || 0);
     
     return acc;
-  }, {} as Record<string, { submissions: typeof submissionsData, totalScore: number, payout: number }>);
+  }, {} as Record<string, GroupedSubmission>);
   
   // Transform grouped data into chart format
   const calculatedPerformanceData = Object.entries(submissionsByDate).map(([date, data]) => {
-    const avgScore = data.submissions.length > 0 
-      ? Math.round(data.totalScore / data.submissions.length)
+    const groupedData = data as GroupedSubmission;
+    const avgScore = groupedData.submissions.length > 0 
+      ? Math.round(groupedData.totalScore / groupedData.submissions.length)
       : 0;
       
     return {
       date,
       engagementScore: avgScore,
-      payout: data.payout
+      payout: groupedData.payout
     };
   }).sort((a, b) => {
     // Sort by date (MM/DD format)
