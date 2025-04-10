@@ -5,35 +5,48 @@ import { Submission, mockSubmissions } from '@/lib/mock-data';
  * Service to fetch submission data from the real API
  * Falls back to mock data if API is unavailable
  */
-export const fetchSubmissions = async (): Promise<Submission[]> => {
+export const fetchSubmissions = async (campaignId?: string): Promise<Submission[]> => {
   try {
     // Force non-cached response with a random query parameter
     const timestamp = new Date().getTime();
-    const response = await fetch(`/api/submissions?t=${timestamp}`);
+    const endpoint = campaignId 
+      ? `/api/submissions?campaignId=${campaignId}&t=${timestamp}`
+      : `/api/submissions?t=${timestamp}`;
     
-    // Log the response content type for debugging
-    const contentType = response.headers.get('content-type');
-    console.log('API Response Content-Type:', contentType);
+    const response = await fetch(endpoint);
     
-    // If the response is HTML (which appears to be the case), we can't parse it as JSON
-    // Since we can't extract meaningful submission data from the HTML,
-    // we'll use the mock data instead
-    if (!response.ok || !contentType || !contentType.includes('application/json')) {
-      console.log('API returning HTML instead of JSON, using mock data');
-      
-      // Try to log the HTML content for debugging
-      const htmlContent = await response.text();
-      console.log('HTML content from API (first 100 chars):', htmlContent.substring(0, 100));
-      
-      return sortSubmissionsByDate(mockSubmissions);
+    if (!response.ok) {
+      console.log(`API returned status ${response.status}, using mock data as fallback`);
+      return sortSubmissionsByDate(campaignId 
+        ? mockSubmissions.filter(sub => sub.campaignId === campaignId)
+        : mockSubmissions);
     }
     
-    const submissions = await response.json();
-    console.log('Real API submissions data:', submissions);
-    return sortSubmissionsByDate(submissions);
+    // Parse the JSON response
+    try {
+      const submissions = await response.json();
+      console.log('Real API submissions data:', submissions);
+      
+      // If the API returns an empty array or invalid structure, use mock data
+      if (!Array.isArray(submissions) || submissions.length === 0) {
+        console.log('API returned empty or invalid data, using mock data as fallback');
+        return sortSubmissionsByDate(campaignId 
+          ? mockSubmissions.filter(sub => sub.campaignId === campaignId)
+          : mockSubmissions);
+      }
+      
+      return sortSubmissionsByDate(submissions);
+    } catch (parseError) {
+      console.error('Error parsing API response:', parseError);
+      return sortSubmissionsByDate(campaignId 
+        ? mockSubmissions.filter(sub => sub.campaignId === campaignId)
+        : mockSubmissions);
+    }
   } catch (error) {
     console.error('Error fetching from API, using mock data as fallback:', error);
-    return sortSubmissionsByDate(mockSubmissions);
+    return sortSubmissionsByDate(campaignId 
+      ? mockSubmissions.filter(sub => sub.campaignId === campaignId)
+      : mockSubmissions);
   }
 };
 
@@ -42,18 +55,58 @@ export const fetchSubmissionById = async (id: string): Promise<Submission | unde
     const timestamp = new Date().getTime();
     const response = await fetch(`/api/submissions/${id}?t=${timestamp}`);
     
-    const contentType = response.headers.get('content-type');
-    if (!response.ok || !contentType || !contentType.includes('application/json')) {
-      console.log(`API returning HTML instead of JSON for submission ${id}, using mock data`);
+    if (!response.ok) {
+      console.log(`API returned status ${response.status} for submission ${id}, using mock data`);
       return mockSubmissions.find(sub => sub.id === id);
     }
     
-    const submission = await response.json();
-    console.log(`Real API submission ${id} data:`, submission);
-    return submission;
+    try {
+      const submission = await response.json();
+      console.log(`Real API submission ${id} data:`, submission);
+      return submission;
+    } catch (parseError) {
+      console.error(`Error parsing API response for submission ${id}:`, parseError);
+      return mockSubmissions.find(sub => sub.id === id);
+    }
   } catch (error) {
     console.error(`Error fetching submission ${id}, checking mock data:`, error);
     return mockSubmissions.find(sub => sub.id === id);
+  }
+};
+
+/**
+ * Helper function to submit content to a campaign
+ * Uses the new /api/submission-format endpoint
+ */
+export const submitContent = async (
+  campaignId: string, 
+  contentUrl: string, 
+  contentPlatform: string,
+  notes?: string
+): Promise<any> => {
+  try {
+    const response = await fetch('/api/submission-format', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        campaignId,
+        contentUrl,
+        contentPlatform,
+        notes
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`API error (${response.status}): ${errorText}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error submitting content:', error);
+    throw error;
   }
 };
 

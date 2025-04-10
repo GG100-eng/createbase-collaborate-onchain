@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -26,8 +25,9 @@ import {
 } from '@/components/ui/select';
 import { Campaign } from '@/lib/mock-data';
 import { useToast } from '@/hooks/use-toast';
-import { twitterCheckerService, TweetValidationResult } from '@/services/twitterCheckerService';
+import { submitContent } from '@/services/submissionService';
 import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 
 const formSchema = z.object({
   contentUrl: z.string().url({
@@ -52,8 +52,9 @@ const CampaignSubmissionForm = ({
 }: CampaignSubmissionFormProps) => {
   const { toast } = useToast();
   const navigate = useNavigate();
-  const [isValidating, setIsValidating] = useState(false);
-  const [validationResult, setValidationResult] = useState<TweetValidationResult | null>(null);
+  const queryClient = useQueryClient();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [validationResult, setValidationResult] = useState<any | null>(null);
   
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -67,120 +68,74 @@ const CampaignSubmissionForm = ({
   const onSubmit = async (data: FormValues) => {
     // Reset previous validation results
     setValidationResult(null);
+    setIsSubmitting(true);
     
-    // If it's a Twitter URL, validate it
-    if (data.contentPlatform === 'twitter') {
-      setIsValidating(true);
+    try {
+      console.log('Submission started for URL:', data.contentUrl);
       
-      try {
-        console.log('Submission started for URL:', data.contentUrl);
+      // Submit to the new API endpoint
+      const result = await submitContent(
+        campaign.id,
+        data.contentUrl,
+        data.contentPlatform,
+        data.notes
+      );
+      
+      console.log('Submission result:', result);
+      
+      // If we received a response with validation info
+      if (result.validation) {
+        setValidationResult(result.validation);
         
-        // First check if the URL format is valid
-        const urlCheck = await twitterCheckerService.checkTweetUrl(data.contentUrl);
-        console.log('URL check complete:', urlCheck);
-        
-        if (!urlCheck.valid) {
+        // Check if the submission was successful
+        if (result.validation.passed) {
           toast({
-            title: "Invalid Tweet URL",
-            description: urlCheck.error || "Please provide a valid Twitter/X URL.",
-            variant: "destructive",
-          });
-          setIsValidating(false);
-          return;
-        }
-        
-        // Prepare requirements based on campaign data
-        const requirements = {
-          hashtags: campaign.requiredTags || [],
-          mentions: campaign.requiredMentions || [],
-          topics: campaign.requiredTopics || [],
-          urls: campaign.requiredUrls || []
-        };
-        
-        console.log('Validating with these requirements:', requirements);
-        
-        // Validate tweet against requirements without preprocessing
-        const validation = await twitterCheckerService.validateTweet(
-          data.contentUrl, 
-          requirements
-        );
-        
-        console.log('Validation complete. Result:', validation);
-        setValidationResult(validation);
-        
-        // If validation failed API-wise, show error
-        if (!validation.success) {
-          toast({
-            title: "API Error",
-            description: "There was an error validating your tweet. Please try again.",
-            variant: "destructive",
-          });
-          setIsValidating(false);
-          return;
-        }
-        
-        // Log the passed status to help with debugging
-        console.log('Overall validation passed status:', validation.passed);
-        
-        // Show toast based on validation result
-        if (validation.passed) {
-          toast({
-            title: "Tweet Validation Successful",
-            description: "Your content has been validated and meets all requirements!",
+            title: "Submission Successful",
+            description: "Your content has been submitted and validated successfully!",
           });
           
-          // Continue with submission process
-          console.log('Validation passed, continuing with submission');
+          // Invalidate the submissions query to refresh the list
+          queryClient.invalidateQueries({ queryKey: ['submissions'] });
           
-          // In a real app, you would send this data to your backend
-          setTimeout(() => {
-            toast({
-              title: 'Submission successful!',
-              description: 'Your content has been submitted for review.',
-            });
-            setIsValidating(false);
-            onSuccess();
-            // Navigate to My Submissions tab after successful submission
-            navigate('/creator-dashboard', { state: { defaultTab: 'submissions' } });
-          }, 1000);
+          // Navigate to My Submissions tab after successful submission
+          setIsSubmitting(false);
+          onSuccess();
+          navigate('/creator-dashboard', { state: { defaultTab: 'submissions' } });
         } else {
-          // Get a meaningful error message
-          const errorMessage = validation.errors?.join(", ") || 
-            "Your tweet doesn't meet all campaign requirements. Please check the details below.";
+          // Validation failed
+          const errorMessage = result.validation.errors?.join(", ") || 
+            "Your content doesn't meet all campaign requirements. Please check the details below.";
             
           toast({
-            title: "Tweet Validation Failed",
+            title: "Validation Failed",
             description: errorMessage,
             variant: "destructive",
           });
           
-          setIsValidating(false);
+          setIsSubmitting(false);
         }
-        
-      } catch (error) {
-        console.error("Error during tweet validation:", error);
-        toast({
-          title: "Validation Error",
-          description: "An error occurred while validating your content. Please try again.",
-          variant: "destructive",
-        });
-        setIsValidating(false);
-      }
-    } else {
-      // For non-Twitter platforms, just submit without validation
-      console.log('Submission data for non-Twitter platform:', data);
-      
-      // Simulate success response
-      setTimeout(() => {
+      } else {
+        // No validation in response, but submission succeeded
         toast({
           title: 'Submission successful!',
           description: 'Your content has been submitted for review.',
         });
-        setIsValidating(false);
+        
+        // Invalidate the submissions query to refresh the list
+        queryClient.invalidateQueries({ queryKey: ['submissions'] });
+        
+        setIsSubmitting(false);
         onSuccess();
-        // Navigate to My Submissions tab after successful submission
         navigate('/creator-dashboard', { state: { defaultTab: 'submissions' } });
-      }, 1000);
+      }
+    } catch (error) {
+      console.error("Error during submission:", error);
+      toast({
+        title: "Submission Error",
+        description: error instanceof Error ? error.message : "An error occurred while submitting your content. Please try again.",
+        variant: "destructive",
+      });
+      setIsSubmitting(false);
     }
   };
   
@@ -409,8 +364,8 @@ const CampaignSubmissionForm = ({
           <Button variant="outline" type="button" onClick={onCancel}>
             Cancel
           </Button>
-          <Button type="submit" disabled={isValidating}>
-            {isValidating ? 'Validating...' : 'Submit Content'}
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? 'Submitting...' : 'Submit Content'}
           </Button>
         </div>
       </form>
