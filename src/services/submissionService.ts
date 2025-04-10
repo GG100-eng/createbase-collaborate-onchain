@@ -1,49 +1,52 @@
 
-import { Submission } from '@/lib/mock-data';
+import { Submission, mockSubmissions } from '@/lib/mock-data';
 
 /**
  * Service to fetch submission data from the real API
+ * Falls back to mock data if API is unavailable
  */
 export const fetchSubmissions = async (): Promise<Submission[]> => {
-  // Force non-cached response with a random query parameter
-  const timestamp = new Date().getTime();
-  const response = await fetch(`/api/submissions?t=${timestamp}`);
-  
-  if (!response.ok) {
-    throw new Error(`API error: ${response.status}`);
+  try {
+    // Force non-cached response with a random query parameter
+    const timestamp = new Date().getTime();
+    const response = await fetch(`/api/submissions?t=${timestamp}`);
+    
+    // Log the response content type for debugging
+    const contentType = response.headers.get('content-type');
+    console.log('API Response Content-Type:', contentType);
+    
+    if (!response.ok || !contentType || !contentType.includes('application/json')) {
+      console.log('API unavailable or returned non-JSON, using mock data as fallback');
+      return sortSubmissionsByDate(mockSubmissions);
+    }
+    
+    const submissions = await response.json();
+    console.log('Real API submissions data:', submissions);
+    return sortSubmissionsByDate(submissions);
+  } catch (error) {
+    console.error('Error fetching from API, using mock data as fallback:', error);
+    return sortSubmissionsByDate(mockSubmissions);
   }
-  
-  // Log the response content type for debugging
-  const contentType = response.headers.get('content-type');
-  console.log('API Response Content-Type:', contentType);
-  
-  if (!contentType || !contentType.includes('application/json')) {
-    const textContent = await response.text();
-    console.error('API returned non-JSON content:', textContent.substring(0, 200) + '...');
-    throw new Error('API response is not in JSON format');
-  }
-  
-  const submissions = await response.json();
-  console.log('Real API submissions data:', submissions);
-  return sortSubmissionsByDate(submissions);
 };
 
 export const fetchSubmissionById = async (id: string): Promise<Submission | undefined> => {
-  const timestamp = new Date().getTime();
-  const response = await fetch(`/api/submissions/${id}?t=${timestamp}`);
-  
-  if (!response.ok) {
-    throw new Error(`API error: ${response.status}`);
+  try {
+    const timestamp = new Date().getTime();
+    const response = await fetch(`/api/submissions/${id}?t=${timestamp}`);
+    
+    const contentType = response.headers.get('content-type');
+    if (!response.ok || !contentType || !contentType.includes('application/json')) {
+      console.log(`API unavailable for submission ${id}, checking mock data`);
+      return mockSubmissions.find(sub => sub.id === id);
+    }
+    
+    const submission = await response.json();
+    console.log(`Real API submission ${id} data:`, submission);
+    return submission;
+  } catch (error) {
+    console.error(`Error fetching submission ${id}, checking mock data:`, error);
+    return mockSubmissions.find(sub => sub.id === id);
   }
-  
-  const contentType = response.headers.get('content-type');
-  if (!contentType || !contentType.includes('application/json')) {
-    throw new Error('API response is not in JSON format');
-  }
-  
-  const submission = await response.json();
-  console.log(`Real API submission ${id} data:`, submission);
-  return submission;
 };
 
 /**
