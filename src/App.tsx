@@ -7,48 +7,19 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import CreatorDashboard from "./pages/CreatorDashboard";
-import { mockSubmissions } from "./lib/mock-data";
 
-const queryClient = new QueryClient();
-
-// Mock API handler
-if (typeof window !== 'undefined') {
-  const originalFetch = window.fetch;
-  window.fetch = async function(input, init) {
-    const url = input.toString();
-    
-    // Handle submissions API endpoint
-    if (url.includes('/api/submissions') && !url.includes('/api/submissions/')) {
-      console.log('Intercepting API call to /api/submissions');
-      return new Response(JSON.stringify(mockSubmissions), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
-    
-    // Handle single submission API endpoint
-    if (url.match(/\/api\/submissions\/[a-zA-Z0-9]+/)) {
-      const id = url.split('/').pop()?.split('?')[0];
-      console.log(`Intercepting API call to /api/submissions/${id}`);
-      const submission = mockSubmissions.find(s => s.id === id);
-      
-      if (submission) {
-        return new Response(JSON.stringify(submission), {
-          status: 200,
-          headers: { 'Content-Type': 'application/json' }
-        });
-      }
-      
-      return new Response(JSON.stringify({ error: 'Submission not found' }), {
-        status: 404,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
-    
-    // Pass through other requests
-    return originalFetch(input, init);
-  };
-}
+// Configure React Query with aggressive dev tools and error logging
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 2,
+      staleTime: 0,
+      refetchOnWindowFocus: true,
+      refetchOnMount: true,
+      refetchOnReconnect: true,
+    },
+  },
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
