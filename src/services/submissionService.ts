@@ -15,8 +15,16 @@ export const fetchSubmissions = async (): Promise<Submission[]> => {
     const contentType = response.headers.get('content-type');
     console.log('API Response Content-Type:', contentType);
     
+    // If the response is HTML (which appears to be the case), we can't parse it as JSON
+    // Since we can't extract meaningful submission data from the HTML,
+    // we'll use the mock data instead
     if (!response.ok || !contentType || !contentType.includes('application/json')) {
-      console.log('API unavailable or returned non-JSON, using mock data as fallback');
+      console.log('API returning HTML instead of JSON, using mock data');
+      
+      // Try to log the HTML content for debugging
+      const htmlContent = await response.text();
+      console.log('HTML content from API (first 100 chars):', htmlContent.substring(0, 100));
+      
       return sortSubmissionsByDate(mockSubmissions);
     }
     
@@ -36,7 +44,7 @@ export const fetchSubmissionById = async (id: string): Promise<Submission | unde
     
     const contentType = response.headers.get('content-type');
     if (!response.ok || !contentType || !contentType.includes('application/json')) {
-      console.log(`API unavailable for submission ${id}, checking mock data`);
+      console.log(`API returning HTML instead of JSON for submission ${id}, using mock data`);
       return mockSubmissions.find(sub => sub.id === id);
     }
     
