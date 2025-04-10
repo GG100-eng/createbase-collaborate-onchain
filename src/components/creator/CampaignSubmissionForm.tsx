@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -31,6 +32,7 @@ import {
   ValidationRequirement,
   SubmissionResponse 
 } from '@/services/submissionService';
+import { twitterCheckerService } from '@/services/twitterCheckerService';
 import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -77,22 +79,106 @@ const CampaignSubmissionForm = ({
     try {
       console.log('Submission started for URL:', data.contentUrl);
       
-      const result = await submitContent(
-        campaign.id,
-        data.contentUrl,
-        data.contentPlatform,
-        data.notes
-      );
-      
-      console.log('Submission result:', result);
-      
-      if (result.validation) {
-        setValidationResult(result.validation);
+      // For Twitter content, use the Twitter checker service
+      if (data.contentPlatform === 'twitter') {
+        // Prepare requirements from campaign
+        const requirements = {
+          hashtags: campaign.requiredTags || [],
+          mentions: campaign.requiredMentions || [],
+          topics: campaign.requiredTopics || [],
+          urls: campaign.requiredUrls || []
+        };
         
-        if (result.validation.passed) {
+        // Validate the tweet
+        const tweetValidation = await twitterCheckerService.validateTweet(
+          data.contentUrl,
+          requirements
+        );
+        
+        console.log('Tweet validation result:', tweetValidation);
+        
+        if (tweetValidation.success) {
+          // Convert to our ValidationResult format
+          const convertedResult: ValidationResult = {
+            passed: !!tweetValidation.passed,
+            errors: tweetValidation.errors || [],
+            requirements: tweetValidation.requirements
+          };
+          
+          setValidationResult(convertedResult);
+          
+          if (convertedResult.passed) {
+            toast({
+              title: "Validation Successful",
+              description: "Your tweet meets all the campaign requirements!",
+            });
+            
+            queryClient.invalidateQueries({ queryKey: ['submissions'] });
+            
+            setIsSubmitting(false);
+            onSuccess();
+            navigate('/creator-dashboard', { state: { defaultTab: 'submissions' } });
+          } else {
+            const errorMessage = convertedResult.errors?.join(", ") || 
+              "Your content doesn't meet all campaign requirements. Please check the details below.";
+              
+            toast({
+              title: "Validation Failed",
+              description: errorMessage,
+              variant: "destructive",
+            });
+            
+            setIsSubmitting(false);
+          }
+        } else {
           toast({
-            title: "Submission Successful",
-            description: "Your content has been submitted and validated successfully!",
+            title: "Validation Error",
+            description: "There was an error validating your tweet. Please try again.",
+            variant: "destructive",
+          });
+          setIsSubmitting(false);
+        }
+      } else {
+        // For non-Twitter content, use the standard submission service
+        const result = await submitContent(
+          campaign.id,
+          data.contentUrl,
+          data.contentPlatform,
+          data.notes
+        );
+        
+        console.log('Submission result:', result);
+        
+        if (result.validation) {
+          setValidationResult(result.validation);
+          
+          if (result.validation.passed) {
+            toast({
+              title: "Submission Successful",
+              description: "Your content has been submitted and validated successfully!",
+            });
+            
+            queryClient.invalidateQueries({ queryKey: ['submissions'] });
+            
+            setIsSubmitting(false);
+            onSuccess();
+            navigate('/creator-dashboard', { state: { defaultTab: 'submissions' } });
+          } else {
+            const errorMessage = result.validation.errors?.join(", ") || 
+              "Your content doesn't meet all campaign requirements. Please check the details below.";
+              
+            toast({
+              title: "Validation Failed",
+              description: errorMessage,
+              variant: "destructive",
+            });
+            
+            setIsSubmitting(false);
+          }
+        } else {
+          toast({
+            title: 'Submission successful!',
+            description: 'Your content has been submitted for review.',
           });
           
           queryClient.invalidateQueries({ queryKey: ['submissions'] });
@@ -100,29 +186,7 @@ const CampaignSubmissionForm = ({
           setIsSubmitting(false);
           onSuccess();
           navigate('/creator-dashboard', { state: { defaultTab: 'submissions' } });
-        } else {
-          const errorMessage = result.validation.errors?.join(", ") || 
-            "Your content doesn't meet all campaign requirements. Please check the details below.";
-            
-          toast({
-            title: "Validation Failed",
-            description: errorMessage,
-            variant: "destructive",
-          });
-          
-          setIsSubmitting(false);
         }
-      } else {
-        toast({
-          title: 'Submission successful!',
-          description: 'Your content has been submitted for review.',
-        });
-        
-        queryClient.invalidateQueries({ queryKey: ['submissions'] });
-        
-        setIsSubmitting(false);
-        onSuccess();
-        navigate('/creator-dashboard', { state: { defaultTab: 'submissions' } });
       }
     } catch (error) {
       console.error("Error during submission:", error);
