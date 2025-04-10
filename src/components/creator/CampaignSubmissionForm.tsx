@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -72,14 +71,12 @@ const CampaignSubmissionForm = ({
   });
 
   const onSubmit = async (data: FormValues) => {
-    // Reset previous validation results
     setValidationResult(null);
     setIsSubmitting(true);
     
     try {
       console.log('Submission started for URL:', data.contentUrl);
       
-      // Submit to the API endpoint
       const result = await submitContent(
         campaign.id,
         data.contentUrl,
@@ -89,26 +86,21 @@ const CampaignSubmissionForm = ({
       
       console.log('Submission result:', result);
       
-      // If we received a response with validation info
       if (result.validation) {
         setValidationResult(result.validation);
         
-        // Check if the submission was successful
         if (result.validation.passed) {
           toast({
             title: "Submission Successful",
             description: "Your content has been submitted and validated successfully!",
           });
           
-          // Invalidate the submissions query to refresh the list
           queryClient.invalidateQueries({ queryKey: ['submissions'] });
           
-          // Navigate to My Submissions tab after successful submission
           setIsSubmitting(false);
           onSuccess();
           navigate('/creator-dashboard', { state: { defaultTab: 'submissions' } });
         } else {
-          // Validation failed
           const errorMessage = result.validation.errors?.join(", ") || 
             "Your content doesn't meet all campaign requirements. Please check the details below.";
             
@@ -121,13 +113,11 @@ const CampaignSubmissionForm = ({
           setIsSubmitting(false);
         }
       } else {
-        // No validation in response, but submission succeeded
         toast({
           title: 'Submission successful!',
           description: 'Your content has been submitted for review.',
         });
         
-        // Invalidate the submissions query to refresh the list
         queryClient.invalidateQueries({ queryKey: ['submissions'] });
         
         setIsSubmitting(false);
@@ -145,7 +135,6 @@ const CampaignSubmissionForm = ({
     }
   };
   
-  // Platform-specific label for content URL
   const getUrlFieldLabel = () => {
     switch (form.watch('contentPlatform')) {
       case 'twitter': return 'Tweet URL';
@@ -155,7 +144,6 @@ const CampaignSubmissionForm = ({
     }
   };
 
-  // Platform-specific placeholder for content URL
   const getUrlFieldPlaceholder = () => {
     switch (form.watch('contentPlatform')) {
       case 'twitter': return 'https://twitter.com/username/status/123456789';
@@ -277,7 +265,6 @@ const CampaignSubmissionForm = ({
           )}
         />
 
-        {/* Validation Result Display */}
         {validationResult && (
           <div className={`p-4 my-4 rounded-md ${
             validationResult.passed ? 'bg-green-50 border border-green-200' : 
@@ -302,19 +289,19 @@ const CampaignSubmissionForm = ({
                 {Object.entries(validationResult.requirements).map(([key, requirement]) => {
                   return (
                     <div key={key} className="flex items-start gap-2">
-                      {requirement?.passed ? (
+                      {requirement.passed ? (
                         <Check className="h-4 w-4 text-green-600 mt-0.5" />
                       ) : (
                         <X className="h-4 w-4 text-red-600 mt-0.5" />
                       )}
                       <div>
                         <span className="font-medium capitalize">{key}</span>
-                        {!requirement?.passed && requirement?.missing && requirement.missing.length > 0 && (
+                        {!requirement.passed && requirement.missing && requirement.missing.length > 0 && (
                           <span className="block text-xs text-red-600">
                             Missing: {requirement.missing.join(', ')}
                           </span>
                         )}
-                        {requirement?.required && requirement.required.length > 0 && (
+                        {requirement.required && requirement.required.length > 0 && (
                           <span className="block text-xs text-slate-600">
                             Required: {requirement.required.join(', ')}
                           </span>

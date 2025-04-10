@@ -1,6 +1,4 @@
 
-import { Submission, mockSubmissions } from '@/lib/mock-data';
-
 // Define interfaces for validation results in submissions
 export interface ValidationRequirement {
   passed: boolean;
@@ -21,49 +19,56 @@ export interface SubmissionResponse {
 }
 
 /**
- * Service to fetch submission data from the real API
- * Falls back to mock data if API is unavailable
+ * Service to fetch submission data from the API
  */
-export const fetchSubmissions = async (context: { queryKey: string[] }): Promise<Submission[]> => {
+export const fetchSubmissions = async (context: { queryKey: string[] }): Promise<any[]> => {
   // Extract campaignId from queryKey if present (queryKey[1])
   const campaignId = context.queryKey.length > 1 ? context.queryKey[1] as string : undefined;
   
   try {
-    // In development, let's use mock data until the API is properly set up
-    // In production, this would attempt to call the real API
-    console.log('Using mock data for submissions');
+    // Build URL with campaign filter if provided
+    const url = campaignId 
+      ? `/api/submissions?campaignId=${campaignId}`
+      : '/api/submissions';
     
-    // Filter by campaign ID if one was provided
-    const filteredSubmissions = campaignId 
-      ? mockSubmissions.filter(sub => sub.campaignId === campaignId)
-      : mockSubmissions;
+    console.log(`Fetching submissions from: ${url}`);
+    const response = await fetch(url);
     
-    return sortSubmissionsByDate(filteredSubmissions);
+    if (!response.ok) {
+      throw new Error(`API returned ${response.status}: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    return data;
   } catch (error) {
-    console.error('Error fetching submissions, using mock data as fallback:', error);
-    return sortSubmissionsByDate(campaignId 
-      ? mockSubmissions.filter(sub => sub.campaignId === campaignId)
-      : mockSubmissions);
+    console.error('Error fetching submissions:', error);
+    throw error;
   }
 };
 
-export const fetchSubmissionById = async (context: { queryKey: string[] }): Promise<Submission | undefined> => {
+export const fetchSubmissionById = async (context: { queryKey: string[] }): Promise<any> => {
   // Extract id from queryKey (queryKey[1])
   const id = context.queryKey[1] as string;
   
   try {
-    // In development, use mock data until API is properly set up
-    console.log(`Using mock data for submission ${id}`);
-    return mockSubmissions.find(sub => sub.id === id);
+    const url = `/api/submissions/${id}`;
+    console.log(`Fetching submission from: ${url}`);
+    const response = await fetch(url);
+    
+    if (!response.ok) {
+      throw new Error(`API returned ${response.status}: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    return data;
   } catch (error) {
-    console.error(`Error fetching submission ${id}, checking mock data:`, error);
-    return mockSubmissions.find(sub => sub.id === id);
+    console.error(`Error fetching submission ${id}:`, error);
+    throw error;
   }
 };
 
 /**
  * Helper function to submit content to a campaign
- * In development, this simulates a successful submission
  */
 export const submitContent = async (
   campaignId: string, 
@@ -72,40 +77,30 @@ export const submitContent = async (
   notes?: string
 ): Promise<SubmissionResponse> => {
   try {
-    console.log('Development mode: Simulating submission with mock validation response');
+    const url = '/api/submissions';
+    console.log(`Submitting content to: ${url}`);
     
-    // Simulate successful validation in development
-    const mockValidation: ValidationResult = {
-      passed: true,
-      requirements: {
-        'hashtags': {
-          passed: true,
-          required: ['#web3', '#blockchain'],
-        },
-        'mentions': {
-          passed: true,
-          required: ['@CreatorBase'],
-        },
-        'content': {
-          passed: true,
-        }
-      }
-    };
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        campaignId,
+        contentUrl,
+        contentPlatform,
+        notes
+      }),
+    });
     
-    return { validation: mockValidation };
+    if (!response.ok) {
+      throw new Error(`API returned ${response.status}: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    return data;
   } catch (error) {
     console.error('Error submitting content:', error);
     throw error;
   }
-};
-
-/**
- * Helper function to sort submissions by date (most recent first)
- */
-const sortSubmissionsByDate = (submissions: Submission[]): Submission[] => {
-  return submissions.sort((a, b) => {
-    const dateA = new Date(a.submittedAt).getTime();
-    const dateB = new Date(b.submittedAt).getTime();
-    return dateB - dateA; // Sort in descending order (newest first)
-  });
 };

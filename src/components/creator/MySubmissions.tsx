@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { 
   Eye, 
@@ -52,7 +53,7 @@ const MySubmissions = () => {
   
   // Force a refetch when component mounts
   useEffect(() => {
-    console.log('Component mounted, fetching submissions from real API...');
+    console.log('Component mounted, fetching submissions from API...');
     refetch();
   }, [refetch]);
   
