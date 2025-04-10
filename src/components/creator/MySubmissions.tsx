@@ -37,14 +37,21 @@ import { Submission } from '@/lib/mock-data';
 import { getEngagementFeedback } from '@/utils/engagementCalculator';
 import { fetchSubmissions } from '@/services/submissionService';
 import { useQuery } from '@tanstack/react-query';
+import { useToast } from '@/hooks/use-toast';
 
 const MySubmissions = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const { toast } = useToast();
   
   // Fetch submissions from the API with aggressive refetching enabled
   const { data: submissionsData, isLoading, error, refetch } = useQuery({
     queryKey: ['submissions'],
-    queryFn: fetchSubmissions,
+    queryFn: async () => {
+      console.log('Fetching submissions...');
+      const data = await fetchSubmissions();
+      console.log('Fetched submissions:', data);
+      return data;
+    },
     refetchOnWindowFocus: true,
     refetchOnMount: true,
     staleTime: 0, // Always consider data stale for immediate refetching
@@ -53,19 +60,30 @@ const MySubmissions = () => {
   
   // Force a refetch when component mounts
   useEffect(() => {
+    console.log('Component mounted, refetching submissions...');
     refetch();
   }, [refetch]);
   
   // If loading or error, handle appropriately
   if (isLoading) return <div className="py-10 text-center">Loading submissions...</div>;
-  if (error) return <div className="py-10 text-center text-red-500">Error loading submissions: {error.message}</div>;
-  if (!submissionsData) return <div className="py-10 text-center">No submissions found</div>;
+  if (error) {
+    console.error('Error in component:', error);
+    return <div className="py-10 text-center text-red-500">Error loading submissions: {error.message}</div>;
+  }
+  if (!submissionsData) {
+    console.log('No submissions data found');
+    return <div className="py-10 text-center">No submissions found</div>;
+  }
+  
+  console.log('Rendering submissions data:', submissionsData);
   
   // Filter submissions based on search query
   const filteredSubmissions = submissionsData.filter(submission => 
     submission.campaignTitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
     submission.brand.toLowerCase().includes(searchQuery.toLowerCase())
   );
+  
+  console.log('Filtered submissions:', filteredSubmissions);
 
   // Find the Base campaign submission
   const baseCampaignSubmission = filteredSubmissions.find(

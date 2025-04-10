@@ -15,13 +15,21 @@ export const fetchSubmissions = async (): Promise<Submission[]> => {
       throw new Error(`API error: ${response.status}`);
     }
     
-    // Check if the response is JSON
+    // Log the response content type for debugging
     const contentType = response.headers.get('content-type');
+    console.log('API Response Content-Type:', contentType);
+    
+    // Check if the response is JSON
     if (!contentType || !contentType.includes('application/json')) {
+      // For debugging, try to get the text content to see what's actually returned
+      const textContent = await response.text();
+      console.log('API returned non-JSON content:', textContent.substring(0, 200) + '...');
       throw new Error('API response is not in JSON format');
     }
     
-    const submissions = await response.json();
+    // Reset the response body reader since we consumed it with response.text()
+    const submissions = await fetch(`/api/submissions?t=${timestamp}`).then(res => res.json());
+    console.log('Successfully fetched API submissions:', submissions);
     return sortSubmissionsByDate(submissions);
   } catch (error) {
     console.error('Error fetching submissions from API:', error);
