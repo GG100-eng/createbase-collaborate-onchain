@@ -5,9 +5,9 @@ import { Submission, mockSubmissions } from '@/lib/mock-data';
  * Service to fetch submission data from the real API
  * Falls back to mock data if API is unavailable
  */
-export const fetchSubmissions = async ({ queryKey }: { queryKey: string[] }): Promise<Submission[]> => {
+export const fetchSubmissions = async (context: { queryKey: string[] }): Promise<Submission[]> => {
   // Extract campaignId from queryKey if present (queryKey[1])
-  const campaignId = queryKey.length > 1 ? queryKey[1] as string : undefined;
+  const campaignId = context.queryKey.length > 1 ? context.queryKey[1] as string : undefined;
   
   try {
     // Force non-cached response with a random query parameter
@@ -53,9 +53,9 @@ export const fetchSubmissions = async ({ queryKey }: { queryKey: string[] }): Pr
   }
 };
 
-export const fetchSubmissionById = async ({ queryKey }: { queryKey: string[] }): Promise<Submission | undefined> => {
+export const fetchSubmissionById = async (context: { queryKey: string[] }): Promise<Submission | undefined> => {
   // Extract id from queryKey (queryKey[1])
-  const id = queryKey[1] as string;
+  const id = context.queryKey[1] as string;
   
   try {
     const timestamp = new Date().getTime();
@@ -80,6 +80,25 @@ export const fetchSubmissionById = async ({ queryKey }: { queryKey: string[] }):
   }
 };
 
+// Define interfaces for validation results in submissions
+export interface ValidationRequirement {
+  passed: boolean;
+  required?: string[];
+  missing?: string[];
+}
+
+export interface ValidationResult {
+  passed: boolean;
+  errors?: string[];
+  requirements?: {
+    [key: string]: ValidationRequirement;
+  };
+}
+
+export interface SubmissionResponse {
+  validation?: ValidationResult;
+}
+
 /**
  * Helper function to submit content to a campaign
  * Uses the new /api/submission-format endpoint
@@ -89,7 +108,7 @@ export const submitContent = async (
   contentUrl: string, 
   contentPlatform: string,
   notes?: string
-): Promise<any> => {
+): Promise<SubmissionResponse> => {
   try {
     const response = await fetch('/api/submission-format', {
       method: 'POST',

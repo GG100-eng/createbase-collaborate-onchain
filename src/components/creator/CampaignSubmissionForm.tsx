@@ -26,7 +26,12 @@ import {
 } from '@/components/ui/select';
 import { Campaign } from '@/lib/mock-data';
 import { useToast } from '@/hooks/use-toast';
-import { submitContent } from '@/services/submissionService';
+import { 
+  submitContent, 
+  ValidationResult, 
+  ValidationRequirement,
+  SubmissionResponse 
+} from '@/services/submissionService';
 import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -39,25 +44,6 @@ const formSchema = z.object({
 });
 
 type FormValues = z.infer<typeof formSchema>;
-
-// Define TypeScript interfaces for validation result structure
-interface ValidationRequirement {
-  passed: boolean;
-  required?: string[];
-  missing?: string[];
-}
-
-interface ValidationResult {
-  passed: boolean;
-  errors?: string[];
-  requirements?: {
-    [key: string]: ValidationRequirement;
-  };
-}
-
-interface SubmissionResponse {
-  validation?: ValidationResult;
-}
 
 interface CampaignSubmissionFormProps {
   campaign: Campaign;
@@ -99,7 +85,7 @@ const CampaignSubmissionForm = ({
         data.contentUrl,
         data.contentPlatform,
         data.notes
-      ) as SubmissionResponse;
+      );
       
       console.log('Submission result:', result);
       
@@ -313,30 +299,24 @@ const CampaignSubmissionForm = ({
             
             {validationResult.requirements && (
               <div className="space-y-2 text-sm">
-                {Object.entries(validationResult.requirements).map(([key, value]) => {
-                  // Skip if value is not an object or doesn't have passed property
-                  if (!value || typeof value !== 'object' || typeof value.passed === 'undefined') {
-                    console.log('Skipping invalid requirement:', key, value);
-                    return null;
-                  }
-                  
+                {Object.entries(validationResult.requirements).map(([key, requirement]) => {
                   return (
                     <div key={key} className="flex items-start gap-2">
-                      {value.passed ? (
+                      {requirement.passed ? (
                         <Check className="h-4 w-4 text-green-600 mt-0.5" />
                       ) : (
                         <X className="h-4 w-4 text-red-600 mt-0.5" />
                       )}
                       <div>
                         <span className="font-medium capitalize">{key}</span>
-                        {!value.passed && value.missing?.length > 0 && (
+                        {!requirement.passed && requirement.missing && requirement.missing.length > 0 && (
                           <span className="block text-xs text-red-600">
-                            Missing: {value.missing.join(', ')}
+                            Missing: {requirement.missing.join(', ')}
                           </span>
                         )}
-                        {value.required && value.required.length > 0 && (
+                        {requirement.required && requirement.required.length > 0 && (
                           <span className="block text-xs text-slate-600">
-                            Required: {value.required.join(', ')}
+                            Required: {requirement.required.join(', ')}
                           </span>
                         )}
                       </div>
