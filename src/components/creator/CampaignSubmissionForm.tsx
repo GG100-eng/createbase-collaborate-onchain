@@ -79,7 +79,7 @@ const CampaignSubmissionForm = ({
     try {
       console.log('Submission started for URL:', data.contentUrl);
       
-      // Submit to the new API endpoint
+      // Submit to the API endpoint
       const result = await submitContent(
         campaign.id,
         data.contentUrl,
@@ -302,19 +302,19 @@ const CampaignSubmissionForm = ({
                 {Object.entries(validationResult.requirements).map(([key, requirement]) => {
                   return (
                     <div key={key} className="flex items-start gap-2">
-                      {requirement.passed ? (
+                      {requirement?.passed ? (
                         <Check className="h-4 w-4 text-green-600 mt-0.5" />
                       ) : (
                         <X className="h-4 w-4 text-red-600 mt-0.5" />
                       )}
                       <div>
                         <span className="font-medium capitalize">{key}</span>
-                        {!requirement.passed && requirement.missing && requirement.missing.length > 0 && (
+                        {!requirement?.passed && requirement?.missing && requirement.missing.length > 0 && (
                           <span className="block text-xs text-red-600">
                             Missing: {requirement.missing.join(', ')}
                           </span>
                         )}
-                        {requirement.required && requirement.required.length > 0 && (
+                        {requirement?.required && requirement.required.length > 0 && (
                           <span className="block text-xs text-slate-600">
                             Required: {requirement.required.join(', ')}
                           </span>
